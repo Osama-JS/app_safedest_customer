@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "837349139131",
+    "project_id": "safedests-1ce66",
+    "storage_bucket": "safedests-1ce66.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:837349139131:android:c745be5c8ac3eb747e3f9e",
+        "android_client_info": {
+          "package_name": "com.example.save_dest_customer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlabgpM_SMSSyQz1GRsg-8LA9lkCKlJ1M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

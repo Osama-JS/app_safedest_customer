@@ -15,6 +15,7 @@ import '../../Models/MapModel.dart';
 import '../../Services/InitialService.dart';
 import '../../shared_prff.dart';
 import '../../Globals/global_methods.dart' as GM;
+import '../../Globals/global.dart' as globals;
 import 'package:http/http.dart' as http;
 
 // 💡 إضافة مساعدة لتحويل اللون إلى صيغة Hex لاستخدامها في Mapbox Line Color
@@ -53,6 +54,8 @@ class _MainMap extends State<MainMap> {
   @override
   void initState() {
     super.initState();
+    globals.dashboardIndex=0;
+
     mapController.showInfo.value = false;
     mapController.isLoadingData.value = true;
     mapController.tapedIndex.value = -1;

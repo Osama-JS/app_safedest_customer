@@ -44,9 +44,9 @@ class AddTaskController extends GetxController {
         pricingSummary.value = PricingSummaryModel.fromJson(dataJson);
 
         // تعيين السعر الأقصى والادنى بناءً على السعر الكلي (كافتراض 120% و 80%)
-        final total = pricingSummary.value!.totalPrice;
-        maxPrice.value = (total * 1.2).ceilToDouble(); // تقريب للأعلى
-        minPrice.value = (total * 0.8).floorToDouble(); // تقريب للأسفل
+        // final total = pricingSummary.value!.totalPrice;
+        // maxPrice.value = (total * 1.2).ceilToDouble(); // تقريب للأعلى
+        // minPrice.value = (total * 0.8).floorToDouble(); // تقريب للأسفل
       } else {
         Get.snackbar("تحذير", "بيانات التسعير المستلمة فارغة.", backgroundColor: Colors.orange);
       }
@@ -72,8 +72,8 @@ class AddTaskController extends GetxController {
       // "additional_fields": stepOne['additional_fields'] ?? {},
 
       // 3. إضافة حقول الصور (Base64)
-      "pickup_image": pickupImageBase64.value,
-      "delivery_image": deliveryImageBase64.value,
+      // "pickup_image": pickupImageBase64.value,
+      // "delivery_image": deliveryImageBase64.value,
 
       // 4. دمج بيانات الخطوة الثالثة (المزايدة)
       "max_price": maxPrice.value,
@@ -97,7 +97,7 @@ class AddTaskController extends GetxController {
     final payload3 = generateFinalPayload();
 
     // تحديد نقطة النهاية (Endpoint)
-    final String endpoint = "asks/add";
+    final String endpoint = "tasks";
 
     final url = Uri.parse(globals.public_uri + endpoint);
 
@@ -209,6 +209,7 @@ class AddTaskPage extends StatelessWidget {
 
   // 💡 استخدام نفس المتحكم المعرّف
   final AddTaskController controller = Get.put(AddTaskController());
+  RxBool showPriceOption = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -231,7 +232,25 @@ class AddTaskPage extends StatelessWidget {
               if (summary != null) ...[
                 _buildSummaryCard(summary),
                 const SizedBox(height: 30),
-                _buildAdvertisedOptions(), // خيارات max/min price
+                Obx(
+                      () => ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Checkbox(
+                      value: showPriceOption.value,
+                      onChanged: (bool? value) {
+                        showPriceOption.value = value?? false;
+
+                      },
+                    ),
+                    title: Text("اضافة تسعيرة مناقصة".tr),
+
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                Obx(()=>
+        showPriceOption.value?
+                    _buildAdvertisedOptions():SizedBox()), // خيارات max/min price
               ] else ...[
                 const Center(child: CircularProgressIndicator()),
               ],

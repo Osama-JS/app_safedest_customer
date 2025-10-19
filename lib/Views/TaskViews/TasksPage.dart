@@ -13,6 +13,7 @@ import '../Widgets/AnimatedSearchBar.dart';
 import '../Widgets/ProgressWithIcon.dart';
 import '../Widgets/custom_image_view.dart';
 import 'AddTaskViews/ValidationOnePage.dart';
+import '../../Globals/global.dart' as globals;
 
 class TasksPage extends StatefulWidget {
 
@@ -26,7 +27,12 @@ class _TasksPageState extends State<TasksPage> {
   final iniService = InitialService.to;
   final TaskController controller = Get.put(TaskController());
   final TextEditingController searchController = TextEditingController();
-
+@override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    globals.dashboardIndex=1;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(

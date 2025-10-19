@@ -412,7 +412,7 @@ class AddTaskPage extends StatelessWidget {
         // حقل الحد الأقصى للسعر
         _buildPriceField(
           label: "الحد الأقصى للسعر",
-          currentValue: controller.maxPrice.value,
+          currentValue: controller.maxPrice,
           onChanged: (val) {
             controller.maxPrice.value = double.tryParse(val) ?? 0.0;
           },
@@ -421,7 +421,7 @@ class AddTaskPage extends StatelessWidget {
         // حقل الحد الأدنى للسعر
         _buildPriceField(
           label: "الحد الأدنى للسعر",
-          currentValue: controller.minPrice.value,
+          currentValue: controller.minPrice,
           onChanged: (val) {
             controller.minPrice.value = double.tryParse(val) ?? 0.0;
           },
@@ -440,12 +440,12 @@ class AddTaskPage extends StatelessWidget {
   }
 
   // دالة مساعدة لحقول إدخال السعر
-  Widget _buildPriceField({required String label, required double currentValue, required ValueChanged<String> onChanged}) {
+  Widget _buildPriceField({required String label, required RxDouble currentValue, required ValueChanged<String> onChanged}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Obx(() => TextFormField(
         // استخدام initialValue فقط في البداية لضمان عمل Obx مع الـ controller.maxPrice/minPrice
-        initialValue: currentValue == 0.0 ? '' : currentValue.toStringAsFixed(2),
+        initialValue: currentValue.value == 0.0 ? '' : currentValue.toStringAsFixed(2),
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: label,

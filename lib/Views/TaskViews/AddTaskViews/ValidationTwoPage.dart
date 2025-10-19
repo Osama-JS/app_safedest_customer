@@ -15,13 +15,6 @@ import '../../Maps/MapPickerSimulationDialog.dart';
 import 'AddTaskPage.dart';
 import 'package:path/path.dart';
 
-
-
-
-// ==========================================================
-// 💼 نماذج التسعير (Pricing Models) 💼
-// ==========================================================
-
 class PricingParam {
   final int id;
   final String name;
@@ -35,7 +28,6 @@ class PricingParam {
         name: '${json['from_point']['name'] ?? 'N/A'} - ${json['to_point']['name'] ?? 'N/A'} (السعر: ${json['price'] ?? 0})',
       );
     }
-    // تستخدم للحالات الأخرى (مثل distance) حيث يتم تمرير ID المعامل
     return PricingParam(id: json['param'] ?? 0, name: 'Default Parameter');
   }
 }
@@ -70,12 +62,7 @@ class PricingMethodModel {
   }
 }
 
-// ==========================================================
-// ⚙️ المتحكم (ValidationTwoController) ⚙️
-// ==========================================================
-
 class ValidationTwoController extends GetxController {
-  // وضع التعديل
   final Rx<TaskModel?> taskModelForEdit = Rx<TaskModel?>(null);
   final RxBool isEditMode = false.obs;
 
@@ -84,19 +71,16 @@ class ValidationTwoController extends GetxController {
   final Rx<PricingParam?> selectedPricingParam = Rx<PricingParam?>(null);
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  // حقول الاستلام (Pickup) التي تعتمد على الإحداثيات والتواريخ
   final RxString pickupAddress = ''.obs;
   final RxDouble pickupLatitude = 0.0.obs;
   final RxDouble pickupLongitude = 0.0.obs;
   final Rx<DateTime?> pickupBeforeDate = Rx<DateTime?>(null);
 
-  // حقول التسليم (Delivery) التي تعتمد على الإحداثيات والتواريخ
   final RxString deliveryAddress = ''.obs;
   final RxDouble deliveryLatitude = 0.0.obs;
   final RxDouble deliveryLongitude = 0.0.obs;
   final Rx<DateTime?> deliveryBeforeDate = Rx<DateTime?>(null);
 
-  // 🚨🚨🚨 المتحكمات النصية الجديدة 🚨🚨🚨
   late TextEditingController pickupNameController;
   late TextEditingController pickupPhoneController;
   late TextEditingController pickupEmailController;
@@ -109,7 +93,6 @@ class ValidationTwoController extends GetxController {
 
   late TextEditingController conditionsController;
 
-  // دالة لتهيئة بيانات التعديل
   void setTaskModelForEdit(TaskModel taskModel) {
     taskModelForEdit.value = taskModel;
     isEditMode.value = true;
@@ -117,7 +100,6 @@ class ValidationTwoController extends GetxController {
 
   @override
   void onInit() {
-    // تهيئة المتحكمات قبل الاستخدام
     pickupNameController = TextEditingController();
     pickupPhoneController = TextEditingController();
     pickupEmailController = TextEditingController();
@@ -134,7 +116,6 @@ class ValidationTwoController extends GetxController {
 
   @override
   void onClose() {
-    // التخلص من المتحكمات
     pickupNameController.dispose();
     pickupPhoneController.dispose();
     pickupEmailController.dispose();
@@ -149,7 +130,6 @@ class ValidationTwoController extends GetxController {
     super.onClose();
   }
 
-
   void initializePricingData(http.Response response) {
     try {
       final decodedBody = jsonDecode(response.body);
@@ -162,7 +142,6 @@ class ValidationTwoController extends GetxController {
       if (isEditMode.value && taskModelForEdit.value != null) {
         loadTaskDataForEdit(taskModelForEdit.value!);
       } else {
-        // وضع الإنشاء: اختيار طريقة التسعير الافتراضية
         if (pricingMethods.isNotEmpty) {
           selectedPricingMethod.value = pricingMethods.first;
           if (selectedPricingMethod.value!.type == 'points' && selectedPricingMethod.value!.params.isNotEmpty) {
@@ -170,19 +149,15 @@ class ValidationTwoController extends GetxController {
           }
         }
       }
-
     } catch (e) {
       Get.snackbar("خطأ تهيئة", "فشل تحليل بيانات التسعير: $e", backgroundColor: Colors.red);
       print("Error initializing pricing data: $e");
     }
   }
 
-  // دالة لملء الحقول ببيانات المهمة المحفوظة
   void loadTaskDataForEdit(TaskModel task) {
-    // 1. تهيئة حقول الاستلام
     pickupNameController.text = task.pickup.contactName.value;
     pickupPhoneController.text = task.pickup.contactPhone.value;
-    // لا يوجد حقل إيميل في TaskModel، نتركه فارغاً أو نضبطه هنا إذا أضيف
     pickupAddress.value = task.pickup.address.value;
     pickupLatitude.value = task.pickup.lat.value;
     pickupLongitude.value = task.pickup.lng.value;
@@ -191,7 +166,6 @@ class ValidationTwoController extends GetxController {
     }
     pickupNoteController.text = task.pickup.note.value;
 
-    // 2. تهيئة حقول التسليم
     deliveryNameController.text = task.delivery.contactName.value;
     deliveryPhoneController.text = task.delivery.contactPhone.value;
     deliveryAddress.value = task.delivery.address.value;
@@ -202,10 +176,6 @@ class ValidationTwoController extends GetxController {
     }
     deliveryNoteController.text = task.delivery.note.value;
 
-    // 3. تهيئة الشروط
-    // conditionsController.text = task.conditions.value; // إذا كان لديك هذا الحقل في TaskModel
-
-    // 4. تهيئة طريقة التسعير
     final initialMethod = pricingMethods.firstWhereOrNull((m) => m.name == task.paymentMethod.value);
     selectedPricingMethod.value = initialMethod;
 
@@ -241,7 +211,6 @@ class ValidationTwoController extends GetxController {
           ? (selectedPricingParam.value?.id)
           : selectedMethod.id,
 
-      // 🚨🚨 استخدام controller.text 🚨🚨
       "pickup_name": pickupNameController.text,
       "pickup_phone": pickupPhoneController.text,
       "pickup_email": pickupEmailController.text,
@@ -306,18 +275,16 @@ class ValidationTwoController extends GetxController {
   }
 }
 
-// ==========================================================
-// 🖥️ الواجهة (ValidationTwoPage) 🖥️
-// ==========================================================
-
 class ValidationTwoPage extends StatefulWidget {
   final http.Response stepOneResponse;
-  final TaskModel? taskModelForEdit; // بارامتر جديد للتعديل
+  final TaskModel? taskModelForEdit;
+  final int? taskIdForEdit;
 
   const ValidationTwoPage({
     super.key,
     required this.stepOneResponse,
-    this.taskModelForEdit
+    this.taskModelForEdit,
+    this.taskIdForEdit
   });
 
   @override
@@ -325,7 +292,6 @@ class ValidationTwoPage extends StatefulWidget {
 }
 
 class _ValidationTwoPageState extends State<ValidationTwoPage> {
-  // يتم استخدام .put لضمان وجود نسخة واحدة من المتحكم
   final ValidationTwoController controller = Get.put(ValidationTwoController());
   var resp;
 
@@ -333,27 +299,17 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
   void initState() {
     super.initState();
 
-    // 1. تهيئة وضع التعديل إن وجد
     if (widget.taskModelForEdit != null) {
       controller.setTaskModelForEdit(widget.taskModelForEdit!);
     }
 
-    // 2. تحميل وتهيئة بيانات التسعير
     controller.initializePricingData(widget.stepOneResponse);
   }
 
-
-  // دالة الإرسال الموحدة (تدعم الإنشاء والتعديل)
   Future<void> sendStepTwoPayload(BuildContext context, Map<String, dynamic> payload2, String token) async {
-    // if (!controller.formKey.currentState!.validate()) {
-    //   Get.snackbar("خطأ", "يرجى ملء جميع حقول العناوين والتواريخ المطلوبة.", snackPosition: SnackPosition.BOTTOM);
-    //   return ;
-    // }
     Map<String, dynamic> payload = globals.stepOnePayload;
 
-    // تحديد نقطة النهاية (Endpoint)
     final String endpoint = "tasks/validate-step2";
-
     final url = Uri.parse(globals.public_uri + endpoint);
 
     if (!await global_methods.isInternetAvailable()) {
@@ -363,12 +319,10 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
 
     global_methods.showDialogLoading(context: context);
 
-    // إعداد الطلب (Multipart)
     var request = http.MultipartRequest('POST', url);
     request.headers['Authorization'] = 'Bearer $token';
     request.headers['Language'] = global_methods.getLanguage();
 
-    // إضافة الحقول الثابتة
     request.fields['template'] = payload['template'].toString();
     request.fields['vehicles'] = jsonEncode(payload['vehicles']);
 
@@ -381,7 +335,6 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
         String fileValue = value;
 
         if (fileValue.isNotEmpty && !fileValue.startsWith('http')) {
-          // ملف جديد تم اختياره (مسار محلي) - يجب إرساله كـ MultipartFile
           File file = File(fileValue);
           if (await file.exists()) {
             var multipartFile = await http.MultipartFile.fromPath(
@@ -392,17 +345,14 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
             request.files.add(multipartFile);
           }
         } else {
-          // رابط URL لملف سابق أو قيمة فارغة (يرسل كحقل نصي)
           request.fields[key] = fileValue;
         }
       } else {
-        // حقول النص العادية والتاريخ
         request.fields[key] = value.toString();
       }
     }
 
     for (var key in payload2.keys) {
-      // بما أن حقول الخطوة الثانية هي حقول نصية فقط (عناوين، تواريخ، تسعير)، نرسلها كحقول نصية
       request.fields[key] = payload2[key].toString();
     }
 
@@ -412,31 +362,24 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
       var data = jsonDecode(response.body);
 
       global_methods.hideLoadingDialog();
-
-      print("saeeeeeeeeeeeeeedddddddddd: $data");
-
-
+print("saeeeeeeeeeeeeeeeeedddddddddd$data");
       if (data["status"] == 200 ) {
         Get.snackbar("نجاح", "تم التحقق بنجاح", snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
-        // if (!isEdit) {
         globals.stepTowPayload = payload2;
-        Get.to(() => AddTaskPage(stepTwoResponse: response));
-        // } else {
-        //   // العودة إلى قائمة المهام بعد التعديل
-        //   Get.back();
-        // }
+        if(controller.isEditMode.value){
+          Get.to(() => AddTaskPage(stepTwoResponse: response,taskModelForEdit: widget.taskModelForEdit,));
 
-
+        }else{
+          Get.to(() => AddTaskPage(stepTwoResponse: response));
+        }
       } else {
-        print("saeeeeeeeeeeeeeedddddddddde: $data");
-
         Get.snackbar("خطأ في API", "فشل الإرسال. الاستجابة: ${data["message"] ?? 'Unknown error'}",
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.shade600,
             colorText: Colors.white);
       }
     } catch (e) {
-      print("saeeeeeeeeeeeeeeddddddddddee: $e");
+      print("saeeeeeeeeeeeeeeeeedddddddddd$e");
 
       Get.snackbar("خطأ الإرسال", "حدث خطأ أثناء الاتصال بالخادم: $e",
           snackPosition: SnackPosition.BOTTOM,
@@ -445,9 +388,6 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
       global_methods.hideLoadingDialog();
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -459,7 +399,6 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
       body: Form(
         key: controller.formKey,
         autovalidateMode: AutovalidateMode.disabled,
-        // autovalidateMode: AutovalidateMode.onUserInteraction,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -479,13 +418,11 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
                   final payload = controller.generatePayload();
                   if (payload.isNotEmpty) {
                     print("Step 2 Payload: ${payload}");
-                    // نرسل البايلود مع التوكن
                     await sendStepTwoPayload(context, payload, Token_pref.getToken()!);
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.primaryColor,
-                  // minimumSize: const Size(double.infinity, 50),
                 ),
                 child: Text(
                     controller.isEditMode.value ? "تعديل وحفظ العناوين" : "المتابعة لإرسال المهمة",
@@ -498,10 +435,6 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
       ),
     );
   }
-
-  // --------------------------------------------------------------------------
-  // دوال بناء الواجهة
-  // --------------------------------------------------------------------------
 
   Widget _buildPricingSection() {
     return Obx(() {
@@ -549,7 +482,6 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
 
   Widget _buildPickupDeliverySection(BuildContext context, {required bool isPickup}) {
     final String title = isPickup ? "2. بيانات الاستلام (Pickup)" : "3. بيانات التسليم (Delivery)";
-    // 🚨🚨 استخدام المتحكمات 🚨🚨
     final TextEditingController nameController = isPickup ? controller.pickupNameController : controller.deliveryNameController;
     final TextEditingController phoneController = isPickup ? controller.pickupPhoneController : controller.deliveryPhoneController;
     final TextEditingController emailController = isPickup ? controller.pickupEmailController : controller.deliveryEmailController;
@@ -558,14 +490,12 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
     final RxString address = isPickup ? controller.pickupAddress : controller.deliveryAddress;
     final Rx<DateTime?> date = isPickup ? controller.pickupBeforeDate : controller.deliveryBeforeDate;
 
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Divider(),
 
-        // 🚨🚨 تمرير المتحكمات مباشرة 🚨🚨
         _buildTextField(label: "اسم المسؤول", controller: nameController),
         _buildTextField(label: "رقم الهاتف", keyboardType: TextInputType.phone, controller: phoneController),
         _buildTextField(label: "البريد الإلكتروني (اختياري)", keyboardType: TextInputType.emailAddress, isRequired: false, controller: emailController),
@@ -594,13 +524,11 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
     );
   }
 
-  // 🚨🚨 تحديث دالة بناء حقل النص لاستخدام Controller 🚨🚨
   Widget _buildTextField({required String label, TextInputType keyboardType = TextInputType.text, required TextEditingController controller, bool isRequired = true, int maxLines = 1}) {
-    // تم إزالة initialValue و onChanged و ValueKey لحل مشكلة فقدان التركيز (Focus)
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
-        controller: controller, // استخدام المتحكم
+        controller: controller,
         keyboardType: keyboardType,
         maxLines: maxLines,
         decoration: InputDecoration(

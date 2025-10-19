@@ -14,39 +14,94 @@ import '../../../Globals/global.dart' as globals;
 import '../../Maps/MapPickerSimulationDialog.dart';
 import 'package:path/path.dart';
 
+// 💡 استيراد موديل المهمة
+import '../../../Models/TaskModel.dart'; // نفترض أن هذا هو المسار الصحيح
+
+// --- Modals (Pricing Summary Model) ---
+
+class PricingSummaryModel {
+  final double totalPrice;
+  final double distance;
+  final String pricingMethod;
+  final double serviceCommission;
+  final double vatCommission;
+  final Map<String, double> breakdown;
+
+  PricingSummaryModel({
+    required this.totalPrice,
+    required this.distance,
+    required this.pricingMethod,
+    required this.serviceCommission,
+    required this.vatCommission,
+    required this.breakdown,
+  });
+
+  factory PricingSummaryModel.fromJson(Map<String, dynamic> json) {
+    double toDouble(dynamic val) {
+      if (val == null) return 0.0;
+      if (val is double) return val;
+      if (val is int) return val.toDouble();
+      if (val is String) return double.tryParse(val) ?? 0.0;
+      return 0.0;
+    }
+
+    final breakdownMap = <String, double>{};
+
+    // إضافة العناصر التي تشكل Breakdown
+    breakdownMap['base_price'] = toDouble(json['base_price']); // تم إضافته ليتوافق مع العرض
+    breakdownMap['distance_price'] = toDouble(json['distance_price']);
+    breakdownMap['service_commission'] = toDouble(json['service_commission']);
+    breakdownMap['vat'] = toDouble(json['vat_commission']);
+
+    return PricingSummaryModel(
+      totalPrice: toDouble(json['total_price']),
+      distance: toDouble(json['distance']),
+      pricingMethod: json['pricing_method'] ?? '',
+      serviceCommission: toDouble(json['service_commission']),
+      vatCommission: toDouble(json['vat_commission']),
+      breakdown: breakdownMap,
+    );
+  }
+}
+
+// --- Controller (AddTaskController) ---
 
 class AddTaskController extends GetxController {
+  // 🏆 حالة التعديل
+  final RxBool isEditMode = false.obs;
+  final RxInt taskIdForEdit = 0.obs;
 
   // 🏆 بيانات التسعير المُستلمة من API الخطوة الثانية
   final Rx<PricingSummaryModel?> pricingSummary = Rx<PricingSummaryModel?>(null);
+
   // 🏆 متغيرات الإرسال النهائي (خيارات المزايدة)
   final RxBool included = true.obs; // القيمة الافتراضية
   final RxDouble maxPrice = 0.0.obs;
   final RxDouble minPrice = 0.0.obs;
   final RxString notePrice = ''.obs;
+  final RxBool showPriceOption = false.obs;
+
 
   // 💡 حقول الصور (يجب تعيين قيم Base64 لها في الخطوة الأولى)
-  // سنفترض وجود هذه القيم في المتحكم أو يتم جلبها من مكان تخزين
   final RxString pickupImageBase64 = "MOCK_PICKUP_IMAGE_BASE64_VALUE".obs;
   final RxString deliveryImageBase64 = "MOCK_DELIVERY_IMAGE_BASE64_VALUE".obs;
 
-// 💡 تهيئة ملخص التسعير وتعيين القيم الأولية للمزايدة
+  // 💡 دالة لتهيئة وضع التعديل وتحميل بيانات المزايدة إذا كانت متاحة
+  void setTaskModelForEdit(TaskModel taskModel) {
+    isEditMode.value = true;
+    taskIdForEdit.value = taskModel.id.value;
+
+  }
+
+
+  // 💡 تهيئة ملخص التسعير وتعيين القيم الأولية للمزايدة
   void setPricingSummary(http.Response response) {
     try {
       final decodedBody = jsonDecode(response.body);
-
-      // 🚨🚨 التعديل الصحيح الآن 🚨🚨: توقع خريطة مباشرة من 'data'
       final dataJson = decodedBody['data'] as Map<String, dynamic>?;
 
       if (dataJson != null) {
-        // نستخدم ملخص التسعير الذي يمثل ملخص التسعير الذي يظهر في الواجهة
-        // نمرر الخريطة مباشرة إلى نموذج PricingSummaryModel
         pricingSummary.value = PricingSummaryModel.fromJson(dataJson);
-
-        // تعيين السعر الأقصى والادنى بناءً على السعر الكلي (كافتراض 120% و 80%)
-        // final total = pricingSummary.value!.totalPrice;
-        // maxPrice.value = (total * 1.2).ceilToDouble(); // تقريب للأعلى
-        // minPrice.value = (total * 0.8).floorToDouble(); // تقريب للأسفل
       } else {
         Get.snackbar("تحذير", "بيانات التسعير المستلمة فارغة.", backgroundColor: Colors.orange);
       }
@@ -55,49 +110,52 @@ class AddTaskController extends GetxController {
       print("Error loading pricing summary: $e");
     }
   }
-  // 🏆 دالة تجميع الحمولة النهائية للإرسال (POST /tasks/add)
+
+  // 🏆 دالة تجميع الحمولة النهائية للإرسال
   Map<String, dynamic> generateFinalPayload() {
 
     // 💡 قراءة الحمولة من المتغيرات العامة (نفترض أنها خرائط جاهزة)
     final stepOne = globals.stepOnePayload as Map<String, dynamic>? ?? {};
     final stepTwo = globals.stepTowPayload as Map<String, dynamic>? ?? {};
 
-    // 🏆 تجميع الحمولة النهائية
+    // 🏆 دمج جميع الحمولة في خريطة واحدة
     final finalPayload = <String, dynamic>{
-      // 1. دمج بيانات الخطوة الثانية (العناوين، التواريخ، الشروط، pricing_method)
+      // دمج جميع حقول الخطوة الثانية
       // ...stepTwo,
 
-      // 2. دمج حقول محددة من الخطوة الأولى
-      // "vehicles": stepOne['vehicles'] ?? [],
-      // "additional_fields": stepOne['additional_fields'] ?? {},
-
-      // 3. إضافة حقول الصور (Base64)
+      // إضافة حقول الصور (Base64) - إذا كانت مطلوبة كحقول نصية
       // "pickup_image": pickupImageBase64.value,
       // "delivery_image": deliveryImageBase64.value,
-
-      // 4. دمج بيانات الخطوة الثالثة (المزايدة)
-      "max_price": maxPrice.value,
-      "min_price": minPrice.value,
-      "note_price": notePrice.value,
-      "included": included.value,
     };
 
-    // 💡 تنظيف البايلود من الحقول غير المطلوبة (مثل 'template' من الخطوة 1)
-    finalPayload.remove('template');
-    finalPayload.removeWhere((key, value) => value == null || (value is String && value.isEmpty) || (value is double && value == 0.0) || (value is int && value == 0));
+    // 🏆 إضافة بيانات الخطوة الثالثة (المزايدة) إذا تم تفعيلها
+    if (showPriceOption.value) {
+      finalPayload["max_price"] = maxPrice.value;
+      finalPayload["min_price"] = minPrice.value;
+      finalPayload["note_price"] = notePrice.value;
+      finalPayload["included"] = included.value;
+    }
+
+    // 🏆 إضافة معرف المهمة إذا كنا في وضع التعديل
+    if (isEditMode.value && taskIdForEdit.value != 0) {
+      finalPayload['id'] = taskIdForEdit.value;
+    }
 
     return finalPayload;
   }
 
 
-  Future<void> sendFinalTask(BuildContext context,  String token) async {
+  Future<void> sendFinalTask(BuildContext context, String token) async {
 
+    // 💡 يتم جلب الحمولة الأولية (Step 1) لتحميل ملفات Multipart
     Map<String, dynamic> payload = globals.stepOnePayload;
     Map<String, dynamic> payload2 = globals.stepTowPayload;
-    final payload3 = generateFinalPayload();
 
-    // تحديد نقطة النهاية (Endpoint)
-    final String endpoint = "tasks";
+    // 💡 يتم جلب الحمولة المدمجة (Step 2 + Step 3 + Edit ID)
+    final payloadFinal = generateFinalPayload();
+
+    // 🏆 تحديد نقطة النهاية بناءً على وضع التعديل/الإضافة
+    final String endpoint = isEditMode.value ? "tasks/${taskIdForEdit.value}" : "tasks";
 
     final url = Uri.parse(globals.public_uri + endpoint);
 
@@ -109,14 +167,15 @@ class AddTaskController extends GetxController {
     global_methods.showDialogLoading(context: context);
 
     // إعداد الطلب (Multipart)
-    var request = http.MultipartRequest('POST', url);
+    var request = http.MultipartRequest(isEditMode.value ?'PUT':'POST', url);
     request.headers['Authorization'] = 'Bearer $token';
     request.headers['Language'] = global_methods.getLanguage();
 
-    // إضافة الحقول الثابتة
+    // 1. إضافة حقول الخطوة الأولى الثابتة (Template, Vehicles)
     request.fields['template'] = payload['template'].toString();
     request.fields['vehicles'] = jsonEncode(payload['vehicles']);
 
+    // 2. معالجة الحقول الإضافية والملفات من الخطوة الأولى
     final Map<String, dynamic> additionalFields = payload['additional_fields'];
 
     for (var key in additionalFields.keys) {
@@ -126,7 +185,7 @@ class AddTaskController extends GetxController {
         String fileValue = value;
 
         if (fileValue.isNotEmpty && !fileValue.startsWith('http')) {
-          // ملف جديد تم اختياره (مسار محلي) - يجب إرساله كـ MultipartFile
+          // ملف جديد تم اختياره (مسار محلي)
           File file = File(fileValue);
           if (await file.exists()) {
             var multipartFile = await http.MultipartFile.fromPath(
@@ -137,23 +196,24 @@ class AddTaskController extends GetxController {
             request.files.add(multipartFile);
           }
         } else {
-          // رابط URL لملف سابق أو قيمة فارغة (يرسل كحقل نصي)
+          // رابط URL لملف سابق أو قيمة فارغة
           request.fields[key] = fileValue;
         }
       } else {
-        // حقول النص العادية والتاريخ
+        // حقول النص العادية
         request.fields[key] = value.toString();
       }
     }
 
+    // 3. إضافة جميع حقول الحمولة النهائية (العناوين، التسعير، ID, المزايدة)
+    for (var key in payloadFinal.keys) {
+      request.fields[key] = payloadFinal[key].toString();
+    }
+
     for (var key in payload2.keys) {
-      // بما أن حقول الخطوة الثانية هي حقول نصية فقط (عناوين، تواريخ، تسعير)، نرسلها كحقول نصية
       request.fields[key] = payload2[key].toString();
     }
-    for (var key in payload3.keys) {
-      // بما أن حقول الخطوة الثانية هي حقول نصية فقط (عناوين، تواريخ، تسعير)، نرسلها كحقول نصية
-      request.fields[key] = payload3[key].toString();
-    }
+
 
     try {
       http.StreamedResponse streamedResponse = await request.send();
@@ -162,16 +222,12 @@ class AddTaskController extends GetxController {
 
       global_methods.hideLoadingDialog();
 
-      print("saeeeeeeeeeeeeeedddddddddd: ${response.body}");
+      if (data["status"] == 200) {
+        Get.snackbar("نجاح", "تم ${isEditMode.value ? 'تعديل' : 'إضافة'} المهمة بنجاح",
+            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
 
-      if (data["status"] == 200 ) {
-        Get.snackbar("نجاح", "تم التحقق بنجاح", snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
-        // if (!isEdit) {
+        // العودة إلى لوحة التحكم
         Get.offAll(() => Dashboard());
-        // } else {
-        //   // العودة إلى قائمة المهام بعد التعديل
-        //   Get.back();
-        // }
 
       } else {
 
@@ -181,8 +237,6 @@ class AddTaskController extends GetxController {
             colorText: Colors.white);
       }
     } catch (e) {
-      print("saeeeeeeeeeeeeeeddddddddddث: $e");
-
       Get.snackbar("خطأ الإرسال", "حدث خطأ أثناء الاتصال بالخادم: $e",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade600,
@@ -190,35 +244,36 @@ class AddTaskController extends GetxController {
       global_methods.hideLoadingDialog();
     }
   }
-
-
-
-
-
 }
-// 💡 يجب إدراج النماذج والمتحكمات المطلوبة في هذا الملف أو استيرادها
-// نفترض هنا أن المتحكم والنموذج تم تعريفهما كما في القسمين السابقين.
+
+// --- Page (AddTaskPage) ---
 
 class AddTaskPage extends StatelessWidget {
   final http.Response stepTwoResponse;
+  // 🏆 إضافة خاصية TaskModel? لدعم التعديل
+  final TaskModel? taskModelForEdit;
 
   AddTaskPage({
     super.key,
     required this.stepTwoResponse,
+    this.taskModelForEdit, // 💡 يمكن أن تكون null (إضافة) أو تحمل قيمة (تعديل)
   });
 
-  // 💡 استخدام نفس المتحكم المعرّف
   final AddTaskController controller = Get.put(AddTaskController());
-  RxBool showPriceOption = false.obs;
 
   @override
   Widget build(BuildContext context) {
-    // تحميل ملخص التسعير عند بناء الصفحة
+    // 1. تهيئة وضع التعديل إذا تم تمرير موديل
+    if (taskModelForEdit != null) {
+      controller.setTaskModelForEdit(taskModelForEdit!);
+    }
+
+    // 2. تحميل ملخص التسعير
     controller.setPricingSummary(stepTwoResponse);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("الخطوة 3: المراجعة النهائية"),
+        title: Text(controller.isEditMode.value ? "الخطوة 3: تعديل ومراجعة" : "الخطوة 3: المراجعة النهائية"),
         backgroundColor: MyColors.appBarColor,
       ),
       body: Obx(() {
@@ -232,25 +287,24 @@ class AddTaskPage extends StatelessWidget {
               if (summary != null) ...[
                 _buildSummaryCard(summary),
                 const SizedBox(height: 30),
-                Obx(
-                      () => ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Checkbox(
-                      value: showPriceOption.value,
-                      onChanged: (bool? value) {
-                        showPriceOption.value = value?? false;
 
-                      },
-                    ),
-                    title: Text("اضافة تسعيرة مناقصة".tr),
-
-                  ),
+                // 🏆 خيار إضافة تسعيرة مناقصة (Bidding Option)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Obx(() => Checkbox(
+                    value: controller.showPriceOption.value,
+                    onChanged: (bool? value) {
+                      controller.showPriceOption.value = value ?? false;
+                    },
+                  )),
+                  title: Text("إضافة تسعيرة مناقصة (Bidding)".tr),
                 ),
                 const SizedBox(height: 10),
 
-                Obx(()=>
-        showPriceOption.value?
-                    _buildAdvertisedOptions():SizedBox()), // خيارات max/min price
+                Obx(() => controller.showPriceOption.value
+                    ? _buildAdvertisedOptions()
+                    : const SizedBox()),
+
               ] else ...[
                 const Center(child: CircularProgressIndicator()),
               ],
@@ -260,14 +314,16 @@ class AddTaskPage extends StatelessWidget {
               // 🏆 زر الإرسال النهائي
               ElevatedButton(
                 onPressed: summary != null ? () async {
-                  // استدعاء دالة الإرسال النهائية
-                  controller.sendFinalTask(context, Token_pref.getToken()!);
+                  await controller.sendFinalTask(context, Token_pref.getToken()!);
                 } : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.primaryColor,
                   // minimumSize: const Size(double.infinity, 50),
                 ),
-                child: const Text("إرسال المهمة النهائية", style: TextStyle(color: Colors.white, fontSize: 18)),
+                child: Text(
+                    controller.isEditMode.value ? "حفظ التعديلات" : "إرسال المهمة النهائية",
+                    style: const TextStyle(color: Colors.white, fontSize: 18)
+                ),
               ),
             ],
           ),
@@ -286,10 +342,10 @@ class AddTaskPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Text("ملخص التسعير", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: MyColors.primaryColor)),
+            Text("ملخص التسعير", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: MyColors.primaryColor)),
             const Divider(height: 20),
             _buildDetailRow("طريقة التسعير", summary.pricingMethod),
-            _buildDetailRow("المسافة المقدرة", "${summary.distance} كم"),
+            _buildDetailRow("المسافة المقدرة", "${summary.distance.toStringAsFixed(2)} كم"),
 
             // عرض تفاصيل الـ Breakdown
             ...summary.breakdown.entries.map((e) => _buildDetailRow(
@@ -310,7 +366,8 @@ class AddTaskPage extends StatelessWidget {
   String _formatBreakdownKey(String key) {
     switch(key) {
       case 'base_price': return 'السعر الأساسي';
-      case 'service_fee': return 'رسوم الخدمة';
+      case 'distance_price': return 'سعر المسافة';
+      case 'service_commission': return 'رسوم الخدمة';
       case 'vat': return 'ضريبة القيمة المضافة';
       default: return key.replaceAll('_', ' ').capitalizeFirst ?? key;
     }
@@ -349,13 +406,13 @@ class AddTaskPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("خيارات المزايدة (اختياري)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        const Text("خيارات المزايدة", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Divider(),
 
         // حقل الحد الأقصى للسعر
         _buildPriceField(
-          label: "الحد الأقصى للسعر (للمزايدة)",
-          initialValue: controller.maxPrice.value.toStringAsFixed(2),
+          label: "الحد الأقصى للسعر",
+          currentValue: controller.maxPrice.value,
           onChanged: (val) {
             controller.maxPrice.value = double.tryParse(val) ?? 0.0;
           },
@@ -363,8 +420,8 @@ class AddTaskPage extends StatelessWidget {
 
         // حقل الحد الأدنى للسعر
         _buildPriceField(
-          label: "الحد الأدنى للسعر (للمزايدة)",
-          initialValue: controller.minPrice.value.toStringAsFixed(2),
+          label: "الحد الأدنى للسعر",
+          currentValue: controller.minPrice.value,
           onChanged: (val) {
             controller.minPrice.value = double.tryParse(val) ?? 0.0;
           },
@@ -383,12 +440,12 @@ class AddTaskPage extends StatelessWidget {
   }
 
   // دالة مساعدة لحقول إدخال السعر
-  Widget _buildPriceField({required String label, required String initialValue, required ValueChanged<String> onChanged}) {
+  Widget _buildPriceField({required String label, required double currentValue, required ValueChanged<String> onChanged}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Obx(() => TextFormField(
-        initialValue: controller.minPrice.value == 0.0 && controller.maxPrice.value == 0.0
-            ? initialValue : (label.contains('الأقصى') ? controller.maxPrice.value.toStringAsFixed(2) : controller.minPrice.value.toStringAsFixed(2)),
+        // استخدام initialValue فقط في البداية لضمان عمل Obx مع الـ controller.maxPrice/minPrice
+        initialValue: currentValue == 0.0 ? '' : currentValue.toStringAsFixed(2),
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
           labelText: label,
@@ -415,54 +472,6 @@ class AddTaskPage extends StatelessWidget {
         onChanged: onChanged,
         validator: (val) => (isRequired && (val == null || val.isEmpty)) ? "${label} مطلوب" : null,
       ),
-    );
-  }
-}
-
-
-
-// 💡 يجب وضع هذا الكلاس في ملفه الخاص (مثل models/pricing_summary_model.dart)
-// ولكن تم إدراجه هنا لضمان عمل الكود بشكل موحد.
-
-class PricingSummaryModel {
-  final double totalPrice;
-  final double distance; // 🚨 تم تعديل النوع إلى double ليناسب الرد 15.62
-  final String pricingMethod;
-  final double serviceCommission;
-  final double vatCommission;
-  final Map<String, double> breakdown;
-
-  PricingSummaryModel({
-    required this.totalPrice,
-    required this.distance,
-    required this.pricingMethod,
-    required this.serviceCommission,
-    required this.vatCommission,
-    required this.breakdown,
-  });
-
-  factory PricingSummaryModel.fromJson(Map<String, dynamic> json) {
-    double toDouble(dynamic val) {
-      if (val == null) return 0.0;
-      if (val is double) return val;
-      if (val is int) return val.toDouble();
-      if (val is String) return double.tryParse(val) ?? 0.0;
-      return 0.0;
-    }
-    final breakdownMap = <String, double>{};
-
-    // إضافة العناصر التي تشكل Breakdown من الـ API مباشرة
-    breakdownMap['distance_price'] = toDouble(json['distance_price']);
-    breakdownMap['service_commission'] = toDouble(json['service_commission']);
-    // يمكن إضافة ضريبة القيمة المضافة كعنصر مستقل في Breakdown إذا أردت فصله
-    // breakdownMap['vat'] = toDouble(json['vat_commission']);
-    return PricingSummaryModel(
-      totalPrice: toDouble(json['total_price']),
-      distance: toDouble(json['distance']), // تحويل إلى double
-      pricingMethod: json['pricing_method'] ?? '',
-      serviceCommission: toDouble(json['service_commission']),
-      vatCommission: toDouble(json['vat_commission']),
-      breakdown: breakdownMap, // استخدام Breakdown الجديد
     );
   }
 }

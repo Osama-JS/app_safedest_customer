@@ -307,6 +307,11 @@ class _TasksPageState extends State<TasksPage> {
                         ),
                       ),
                     ),
+                    if(item.status.value=="in_progress"&&item.driver.name.value=='')
+                    IconButton(onPressed: (){
+                      controller.pressedIndex.value=index;
+                      Get.to(()=> ValidationOnePage(taskIdForEdit: item.id.value,taskModelForEdit: item));
+                    }, icon: Icon(Icons.edit))
                   ],
                 ),
                 const SizedBox(height: 12),

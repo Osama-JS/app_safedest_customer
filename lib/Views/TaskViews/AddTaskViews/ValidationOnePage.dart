@@ -147,7 +147,8 @@ class ValidationOneController extends GetxController {
   final RxList<VehicleData> allVehicles = <VehicleData>[].obs;
   final RxList<DynamicFieldModel> additionalFields = <DynamicFieldModel>[].obs;
   Map<String, dynamic>? rawTaskTemplates;
-  final List<String> templateKeys = ['task_template', 'task_from_template', 'task_to_template'];
+  // final List<String> templateKeys = ['task_template', 'task_from_template', 'task_to_template'];
+  final List<String> templateKeys = ['task_template'];
   final RxInt selectedTemplateIndex = (-1).obs;
   final RxList<String> availableTemplatesKeys = <String>[].obs;
   final RxInt selectedTemplateId = (-1).obs;
@@ -162,6 +163,14 @@ class ValidationOneController extends GetxController {
   // دالة لتعيين بيانات المهمة عند بدء التعديل
   void setTaskModelForEdit(TaskModel taskModel) {
     taskModelForEdit.value = taskModel;
+
+    print("nnnnnnnnnnssy");
+    print("nnnnnnnnnnssy"+taskModel.additionalData.length.toString());
+    for(var item in taskModel.additionalData){
+      print("sasasaeeed${item.label}");
+      print("sasasaeeed${item.value}");
+    }
+
     isEditMode.value = true;
   }
 
@@ -183,8 +192,8 @@ class ValidationOneController extends GetxController {
 
         rawTaskTemplates = {
           'task_template': dataBody['task_template'],
-          'task_from_template': dataBody['task_from_template'],
-          'task_to_template': dataBody['task_to_template'],
+          // 'task_from_template': dataBody['task_from_template'],
+          // 'task_to_template': dataBody['task_to_template'],
         };
 
         availableTemplatesKeys.clear();
@@ -326,21 +335,33 @@ class ValidationOneController extends GetxController {
 
     // تهيئة الحقول من بيانات المهمة المحفوظة
     if (initialData != null) {
+      print("niaaaaaaaaaaaaaaaaaaaa fileds 1");
+
       for (var field in tempFields) {
+        print("niaaaaaaaaaaaaaaaaaaaa fileds 2");
+
         final savedEntry = initialData.firstWhereOrNull((item) => item.label.value.trim() == field.label.trim());
 
         if (savedEntry != null) {
+          print("niaaaaaaaaaaaaaaaaaaaa fileds 3");
+
           // تعيين القيمة النصية
           field.textValue.value = savedEntry.value.value;
 
           // تعيين الملف أو تاريخ الانتهاء بناءً على نوع الحقل
           if (field.type.contains('file') && savedEntry.value.value.startsWith('http')) {
             field.fileUrl.value = savedEntry.value.value; // رابط URL للملف المحفوظ
+            print("niaaaaaaaaaaaaaaaaaaaa fileds 4");
+
           }
 
           if (field.type == 'file_expiration_date') {
+            print("niaaaaaaaaaaaaaaaaaaaa fileds 5");
+
             // محاولة تحليل القيمة المخزنة كتاريخ
             try {
+              print("niaaaaaaaaaaaaaaaaaaaa fileds 6");
+
               field.expirationDate.value = DateTime.tryParse(savedEntry.value.value);
             } catch (e) {
               // في حالة فشل التحليل، نتركها فارغة
@@ -533,7 +554,13 @@ class _ValidationOnePageState extends State<ValidationOnePage> {
 
         // if (!isEdit) {
           globals.stepOnePayload=payload;
-          Get.to(() => ValidationTwoPage(stepOneResponse: response));
+          if(controller.isEditMode.value){
+            Get.to(() => ValidationTwoPage(stepOneResponse: response,taskModelForEdit: widget.taskModelForEdit,taskIdForEdit: widget.taskIdForEdit,));
+
+          }else{
+            Get.to(() => ValidationTwoPage(stepOneResponse: response));
+
+          }
         // } else {
         //   // العودة إلى قائمة المهام بعد التعديل
         //   Get.back();
@@ -751,6 +778,7 @@ class _ValidationOnePageState extends State<ValidationOnePage> {
           itemCount: controller.additionalFields.length,
           itemBuilder: (context, index) {
             final field = controller.additionalFields[index];
+            print("niaaaaaaaaaaaaaaaaaaaa fileds page$field");
             return _buildDynamicField(field);
           },
         )),
@@ -847,11 +875,12 @@ class _ValidationOnePageState extends State<ValidationOnePage> {
               ),
             ),
           ),
-        ElevatedButton.icon(
-          onPressed: _pickFile,
-          icon: Icon(field.fileUrl.value.isEmpty ? Icons.upload_file : Icons.check_circle, color: Colors.white),
-          label: Text(field.fileUrl.value.isEmpty ? "اختر ملف" : "تغيير الملف المختار", style: const TextStyle(color: Colors.white)),
-          style: ElevatedButton.styleFrom(backgroundColor: field.fileUrl.value.isEmpty ? Colors.blue.shade700 : Colors.green.shade700),
+        Obx(()=> ElevatedButton.icon(
+            onPressed: _pickFile,
+            icon: Icon(field.fileUrl.value.isEmpty ? Icons.upload_file : Icons.check_circle, color: Colors.white),
+            label: Text(field.fileUrl.value.isEmpty ? "اختر ملف" : "تغيير الملف المختار", style: const TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: field.fileUrl.value.isEmpty ? Colors.blue.shade700 : Colors.green.shade700),
+          ),
         ),
         if (field.required)
         // حقل مخفي للتحقق من وجود ملف (سواء كان رابطاً قديماً أو مساراً جديداً)

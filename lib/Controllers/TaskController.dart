@@ -63,7 +63,7 @@ class TaskController extends GetxController {
         }
         currentPage++;
       }
-
+print("saeeeeeeeeeeeeedddddddddd : ${data["data"]["tasks"][0]["ad"]}");
 
     } catch (e) {
       isThereError.value=true;

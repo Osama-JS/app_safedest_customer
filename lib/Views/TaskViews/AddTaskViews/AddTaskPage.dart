@@ -71,6 +71,8 @@ class AddTaskController extends GetxController {
   final RxBool isEditMode = false.obs;
   final RxInt taskIdForEdit = 0.obs;
 
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+
   // 🏆 بيانات التسعير المُستلمة من API الخطوة الثانية
   final Rx<PricingSummaryModel?> pricingSummary = Rx<PricingSummaryModel?>(null);
 
@@ -90,6 +92,35 @@ class AddTaskController extends GetxController {
   void setTaskModelForEdit(TaskModel taskModel) {
     isEditMode.value = true;
     taskIdForEdit.value = taskModel.id.value;
+
+
+    // 2. استخراج وتهيئة بيانات الأسعار من حقل 'ad'
+    final adDetails = taskModel.ad.value;
+
+    if (adDetails != null) {
+      // تعيين القيم من ad إلى المتغيرات المراقبة
+
+      // تهيئة maxPrice و minPrice
+      // نستخدم القيمة الافتراضية 0.0 في حال كانت القيم null
+      maxPrice.value = adDetails.max;
+      minPrice.value = adDetails.min;
+
+      // تهيئة notePrice
+      notePrice.value = adDetails.description;
+
+      // تهيئة showPriceOption
+      // نفترض أن الخيار يجب أن يظهر إذا كانت أي من القيم (min/max) أكبر من الصفر
+      // أو إذا كان هناك وصف (notePrice)
+      showPriceOption.value = adDetails.max > 0.0 ||
+          adDetails.min > 0.0 ||
+          adDetails.description.isNotEmpty;
+    } else {
+      // إذا كان حقل 'ad' فارغاً، يتم مسح القيم والتأكد من عدم عرض الخيار
+      maxPrice.value = 0.0;
+      minPrice.value = 0.0;
+      notePrice.value = '';
+      showPriceOption.value = false;
+    }
 
   }
 
@@ -155,7 +186,7 @@ class AddTaskController extends GetxController {
     final payloadFinal = generateFinalPayload();
 
     // 🏆 تحديد نقطة النهاية بناءً على وضع التعديل/الإضافة
-    final String endpoint = isEditMode.value ? "tasks/${taskIdForEdit.value}" : "tasks";
+    final String endpoint = isEditMode.value ? "tasks/update" : "tasks";
 
     final url = Uri.parse(globals.public_uri + endpoint);
 
@@ -167,7 +198,7 @@ class AddTaskController extends GetxController {
     global_methods.showDialogLoading(context: context);
 
     // إعداد الطلب (Multipart)
-    var request = http.MultipartRequest(isEditMode.value ?'PUT':'POST', url);
+    var request = http.MultipartRequest('POST', url);
     request.headers['Authorization'] = 'Bearer $token';
     request.headers['Language'] = global_methods.getLanguage();
 
@@ -177,6 +208,7 @@ class AddTaskController extends GetxController {
 
     // 2. معالجة الحقول الإضافية والملفات من الخطوة الأولى
     final Map<String, dynamic> additionalFields = payload['additional_fields'];
+    Map<String, dynamic> textAndUrlFields = {};
 
     for (var key in additionalFields.keys) {
       var value = additionalFields[key];
@@ -185,24 +217,26 @@ class AddTaskController extends GetxController {
         String fileValue = value;
 
         if (fileValue.isNotEmpty && !fileValue.startsWith('http')) {
-          // ملف جديد تم اختياره (مسار محلي)
           File file = File(fileValue);
           if (await file.exists()) {
             var multipartFile = await http.MultipartFile.fromPath(
-              key,
+              "additional_fields[${key.substring(0, key.length - 5)}]",
               fileValue,
               filename: basename(fileValue),
             );
             request.files.add(multipartFile);
           }
         } else {
-          // رابط URL لملف سابق أو قيمة فارغة
-          request.fields[key] = fileValue;
+          textAndUrlFields[key] = fileValue;
         }
       } else {
-        // حقول النص العادية
-        request.fields[key] = value.toString();
+        textAndUrlFields[key] = value.toString();
       }
+    }
+    if (textAndUrlFields.isNotEmpty) {
+      textAndUrlFields.forEach((key, value) {
+        request.fields['additional_fields[$key]'] = value.toString();
+      });
     }
 
     // 3. إضافة جميع حقول الحمولة النهائية (العناوين، التسعير، ID, المزايدة)
@@ -211,9 +245,17 @@ class AddTaskController extends GetxController {
     }
 
     for (var key in payload2.keys) {
-      request.fields[key] = payload2[key].toString();
+      if(key.contains("email")){
+        if(payload2[key].toString()!="null"&&payload2[key].toString()!=""){
+          request.fields[key] = payload2[key].toString();
+        }
+      }else {
+        request.fields[key] = payload2[key].toString();
+      }
     }
-
+    if(isEditMode.value){
+      request.fields['id'] = taskIdForEdit.value.toString();
+    }
 
     try {
       http.StreamedResponse streamedResponse = await request.send();
@@ -252,11 +294,13 @@ class AddTaskPage extends StatelessWidget {
   final http.Response stepTwoResponse;
   // 🏆 إضافة خاصية TaskModel? لدعم التعديل
   final TaskModel? taskModelForEdit;
+  final int priceMethodId;
 
   AddTaskPage({
     super.key,
     required this.stepTwoResponse,
-    this.taskModelForEdit, // 💡 يمكن أن تكون null (إضافة) أو تحمل قيمة (تعديل)
+    this.taskModelForEdit,
+    required this.priceMethodId,
   });
 
   final AddTaskController controller = Get.put(AddTaskController());
@@ -289,21 +333,23 @@ class AddTaskPage extends StatelessWidget {
                 const SizedBox(height: 30),
 
                 // 🏆 خيار إضافة تسعيرة مناقصة (Bidding Option)
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: Obx(() => Checkbox(
-                    value: controller.showPriceOption.value,
-                    onChanged: (bool? value) {
-                      controller.showPriceOption.value = value ?? false;
-                    },
-                  )),
-                  title: Text("إضافة تسعيرة مناقصة (Bidding)".tr),
-                ),
+                // ListTile(
+                //   contentPadding: EdgeInsets.zero,
+                //   leading: Obx(() => Checkbox(
+                //     value: controller.showPriceOption.value,
+                //     onChanged: (bool? value) {
+                //       controller.showPriceOption.value = value ?? false;
+                //     },
+                //   )),
+                //   title: Text("إضافة تسعيرة مناقصة (Bidding)".tr),
+                // ),
                 const SizedBox(height: 10),
 
-                Obx(() => controller.showPriceOption.value
-                    ? _buildAdvertisedOptions()
-                    : const SizedBox()),
+                if (priceMethodId == 0)
+                  Form(
+                    key: controller.formKey, // ربط المفتاح بالنموذج
+                    child: _buildAdvertisedOptions(),
+                  ),
 
               ] else ...[
                 const Center(child: CircularProgressIndicator()),
@@ -314,7 +360,17 @@ class AddTaskPage extends StatelessWidget {
               // 🏆 زر الإرسال النهائي
               ElevatedButton(
                 onPressed: summary != null ? () async {
-                  await controller.sendFinalTask(context, Token_pref.getToken()!);
+
+                  bool isValid = true;
+                  if (priceMethodId == 0) {
+                    isValid = controller.formKey.currentState!.validate();
+                  }
+
+                  if (isValid) {
+                    await controller.sendFinalTask(context, Token_pref.getToken()!);
+                  }
+
+                  // await controller.sendFinalTask(context, Token_pref.getToken()!);
                 } : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.primaryColor,
@@ -439,12 +495,17 @@ class AddTaskPage extends StatelessWidget {
     );
   }
 
-  // دالة مساعدة لحقول إدخال السعر
-  Widget _buildPriceField({required String label, required RxDouble currentValue, required ValueChanged<String> onChanged}) {
+// في كلاس AddTaskPage
+
+// دالة مساعدة لحقول إدخال السعر
+  Widget _buildPriceField({
+    required String label,
+    required RxDouble currentValue,
+    required ValueChanged<String> onChanged
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Obx(() => TextFormField(
-        // استخدام initialValue فقط في البداية لضمان عمل Obx مع الـ controller.maxPrice/minPrice
         initialValue: currentValue.value == 0.0 ? '' : currentValue.toStringAsFixed(2),
         keyboardType: TextInputType.number,
         decoration: InputDecoration(
@@ -453,10 +514,17 @@ class AddTaskPage extends StatelessWidget {
           border: const OutlineInputBorder(),
         ),
         onChanged: onChanged,
+        // 🏆 منطق التحقق: يجب أن تكون القيمة موجبة
+        validator: (val) {
+          final double? price = double.tryParse(val ?? '');
+          if (price == null || price <= 0) {
+            return 'يرجى إدخال سعر صحيح وموجب لـ ${label}';
+          }
+          return null;
+        },
       )),
     );
   }
-
   // دالة مساعدة لحقول النص العادية
   Widget _buildTextField({required String label, TextInputType keyboardType = TextInputType.text, required ValueChanged<String> onChanged, bool isRequired = true, int maxLines = 1, String? initialValue}) {
     return Padding(

@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:location/location.dart' as loc;
+import 'package:save_dest_customer/Views/Widgets/ProgressWithIcon.dart';
 import '../../Controllers/MapController.dart';
 import '../../Globals/MyColors.dart';
 import '../../Globals/style.dart';
@@ -63,11 +64,11 @@ class _MainMap extends State<MainMap> {
 
     _initialCameraOptions = CameraOptions(
       center: iniLocation,
-      zoom: 14.0,
+      zoom: 2.0,
       // pitch: 0
     );
 
-    startLocationTracking();
+    // startLocationTracking();
   }
 
   @override
@@ -102,7 +103,7 @@ class _MainMap extends State<MainMap> {
       return true;
     });
 
-    // استخدام البنية الصحيحة لـ Point
+    // // استخدام البنية الصحيحة لـ Point
     Point initialMyPoint = Point(coordinates: Position(double.parse(mapController.myLong.value), double.parse(mapController.myLate.value)));
     _updateMarkers(initialMyPoint);
   }
@@ -113,42 +114,42 @@ class _MainMap extends State<MainMap> {
 
   StreamSubscription<loc.LocationData>? _locationSubscription;
 
-  void startLocationTracking() async {
-    bool serviceEnabled = await _location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await _location.requestService();
-      if (!serviceEnabled) return;
-    }
-
-    var permission = await _location.requestPermission();
-    if (permission == loc.PermissionStatus.denied) return;
-
-    _locationSubscription?.cancel();
-
-    // 🏆 التعديل الأساسي: تفعيل distanceFilter بقيمة 5 أمتار
-    _location.changeSettings(
-      accuracy: loc.LocationAccuracy.high,
-      interval: 1000,
-      distanceFilter: 5, // التحديث فقط بعد الحركة بـ 5 أمتار
-    );
-
-
-    _locationSubscription = _location.onLocationChanged.listen((loc.LocationData currentLocation) {
-      // استخدام البنية الصحيحة لـ Point (Long, Lat)
-      Point myPoint = Point(coordinates: Position(currentLocation.longitude!, currentLocation.latitude!));
-      mapController.myLong.value = currentLocation.longitude.toString();
-      mapController.myLate.value = currentLocation.latitude.toString();
-
-      if (mapController.myLate.value != "21.4225" && isLoading.value) {
-        isLoading.value = false;
-        _moveCamera(myPoint);
-        _updateMarkers(myPoint);
-      } else if (!isLoading.value) {
-        _updateMarkers(myPoint);
-
-      }
-    });
-  }
+  // void startLocationTracking() async {
+  //   bool serviceEnabled = await _location.serviceEnabled();
+  //   if (!serviceEnabled) {
+  //     serviceEnabled = await _location.requestService();
+  //     if (!serviceEnabled) return;
+  //   }
+  //
+  //   var permission = await _location.requestPermission();
+  //   if (permission == loc.PermissionStatus.denied) return;
+  //
+  //   _locationSubscription?.cancel();
+  //
+  //   // 🏆 التعديل الأساسي: تفعيل distanceFilter بقيمة 5 أمتار
+  //   _location.changeSettings(
+  //     accuracy: loc.LocationAccuracy.high,
+  //     interval: 1000,
+  //     distanceFilter: 5, // التحديث فقط بعد الحركة بـ 5 أمتار
+  //   );
+  //
+  //
+  //   _locationSubscription = _location.onLocationChanged.listen((loc.LocationData currentLocation) {
+  //     // استخدام البنية الصحيحة لـ Point (Long, Lat)
+  //     Point myPoint = Point(coordinates: Position(currentLocation.longitude!, currentLocation.latitude!));
+  //     mapController.myLong.value = currentLocation.longitude.toString();
+  //     mapController.myLate.value = currentLocation.latitude.toString();
+  //
+  //     if (mapController.myLate.value != "21.4225" && isLoading.value) {
+  //       isLoading.value = false;
+  //       _moveCamera(myPoint);
+  //       _updateMarkers(myPoint);
+  //     } else if (!isLoading.value) {
+  //       _updateMarkers(myPoint);
+  //
+  //     }
+  //   });
+  // }
 
 
   Future<void> _moveCamera(Point position) async {
@@ -185,25 +186,25 @@ class _MainMap extends State<MainMap> {
 
     if (annotationManager == null) return;
 
-    await annotationManager!.deleteAll();
+    // await annotationManager!.deleteAll();
 
     // 1. إضافة علامة الموقع الحالي
-    final currentMarkerOptions = PointAnnotationOptions(
-      textField: '',
-      geometry: myPosition,
-      iconSize: 1,
-      // 💡 تم ضبط الإزاحة لتثبيت طرف الأيقونة على الموقع
-      iconOffset: [0.0, -17.0],
-
-      symbolSortKey: 0,
-      image: iniService.mapMyPointIcon,
-
-    );
-    await annotationManager!.create(currentMarkerOptions);
+    // final currentMarkerOptions = PointAnnotationOptions(
+    //   textField: '',
+    //   geometry: myPosition,
+    //   iconSize: 0.3,
+    //   // 💡 تم ضبط الإزاحة لتثبيت طرف الأيقونة على الموقع
+    //   iconOffset: [0.0, -17.0],
+    //
+    //   symbolSortKey: 0,
+    //   image: iniService.mapMyPointIcon,
+    //
+    // );
+    // await annotationManager!.create(currentMarkerOptions);
 
     // 2. إضافة علامات البيانات الأخرى
     await annotationManager!.createMulti(mapController.mapMarkersOptions.toList());
-    print("nnnnnn");
+    print("nnnnnns");
     setState(() {});
   }
 
@@ -230,7 +231,11 @@ class _MainMap extends State<MainMap> {
 
         body: SafeArea(
           child: Obx(
-                () => Stack(
+
+                () =>
+                mapController.isLoadingData.value?
+                Center(child: ProgressWithIcon()):
+                Stack(
               children: [
 
                 SizedBox(
@@ -266,7 +271,8 @@ class _MainMap extends State<MainMap> {
                     left: 0,
                     right: 0,
                     child: Container(
-                      height: 290,
+
+                      // height: 290,
                       child: _buildInfo(context),
                     ),
                   ),

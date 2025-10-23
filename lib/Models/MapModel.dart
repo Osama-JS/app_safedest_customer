@@ -47,8 +47,8 @@ class MapModel {
     return MapModel(
       id: json['id'] ?? 0,
       status: json['status'] ?? '',
-      lat: ((json['lat'] is num) ? (json['lat'] as num).toDouble() : 0.0).toString(),
-      lng: ((json['lng'] is num) ? (json['lng'] as num).toDouble() : 0.0).toString(),
+      lat: json['lat'] ??"0.0",
+      lng: json['lng']??"0.0",
       pickupAddress: json['pickup_address'] ?? '',
       deliveryAddress: json['delivery_address'] ?? '',
       driverName: json['driver_name'],

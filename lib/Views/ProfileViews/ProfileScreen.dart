@@ -161,7 +161,12 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
         centerTitle: true,
               actions: [
                 IconButton(onPressed: (){
-                  _showConfirmationDialog();
+
+                  Token_pref.setToken("");
+                  User_pref.setUser("");
+                  globals.user=null;
+                  Get.off(Splash());
+                  // _showConfirmationDialog();
 
                 }, icon: Icon(Icons.logout)),
               ],

@@ -138,7 +138,7 @@ class ValidationTwoController extends GetxController {
       pricingMethods.value = dataJson
           .map((item) => PricingMethodModel.fromJson(item))
           .toList();
-
+      pricingMethods.add(PricingMethodModel(id: 0,name: "ضع سعرك",type: "handed",params: []));
       if (isEditMode.value && taskModelForEdit.value != null) {
         loadTaskDataForEdit(taskModelForEdit.value!);
       } else {
@@ -161,6 +161,8 @@ class ValidationTwoController extends GetxController {
     pickupAddress.value = task.pickup.address.value;
     pickupLatitude.value = task.pickup.lat.value;
     pickupLongitude.value = task.pickup.lng.value;
+    print("dddddddd"+pickupLatitude.value.toString());
+    print("dddddddd"+pickupLongitude.value.toString());
     if (task.pickup.scheduledTime.isNotEmpty) {
       pickupBeforeDate.value = DateTime.tryParse(task.pickup.scheduledTime.value.split(' ')[0]);
     }
@@ -176,7 +178,7 @@ class ValidationTwoController extends GetxController {
     }
     deliveryNoteController.text = task.delivery.note.value;
 
-    final initialMethod = pricingMethods.firstWhereOrNull((m) => m.name == task.paymentMethod.value);
+    final initialMethod = pricingMethods.firstWhereOrNull((m) => m.id == task.pricingMethodId.value);
     selectedPricingMethod.value = initialMethod;
 
     if (initialMethod?.type == 'points' && initialMethod!.params.isNotEmpty) {
@@ -325,8 +327,11 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
 
     request.fields['template'] = payload['template'].toString();
     request.fields['vehicles'] = jsonEncode(payload['vehicles']);
-
+    if(controller.isEditMode.value){
+      request.fields['id'] = widget.taskIdForEdit.toString();
+    }
     final Map<String, dynamic> additionalFields = payload['additional_fields'];
+    Map<String, dynamic> textAndUrlFields = {};
 
     for (var key in additionalFields.keys) {
       var value = additionalFields[key];
@@ -338,22 +343,34 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
           File file = File(fileValue);
           if (await file.exists()) {
             var multipartFile = await http.MultipartFile.fromPath(
-              key,
+              "additional_fields[${key.substring(0, key.length - 5)}]",
               fileValue,
               filename: basename(fileValue),
             );
             request.files.add(multipartFile);
           }
         } else {
-          request.fields[key] = fileValue;
+          textAndUrlFields[key] = fileValue;
         }
       } else {
-        request.fields[key] = value.toString();
+        textAndUrlFields[key] = value.toString();
       }
     }
+    if (textAndUrlFields.isNotEmpty) {
+      textAndUrlFields.forEach((key, value) {
+        request.fields['additional_fields[$key]'] = value.toString();
+      });
+    }
+
 
     for (var key in payload2.keys) {
-      request.fields[key] = payload2[key].toString();
+      if(key.contains("email")){
+        if(payload2[key].toString()!="null"&&payload2[key].toString()!=""){
+          request.fields[key] = payload2[key].toString();
+        }
+      }else {
+        request.fields[key] = payload2[key].toString();
+      }
     }
 
     try {
@@ -367,10 +384,10 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
         Get.snackbar("نجاح", "تم التحقق بنجاح", snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
         globals.stepTowPayload = payload2;
         if(controller.isEditMode.value){
-          Get.to(() => AddTaskPage(stepTwoResponse: response,taskModelForEdit: widget.taskModelForEdit,));
+          Get.to(() => AddTaskPage(stepTwoResponse: response,taskModelForEdit: widget.taskModelForEdit,priceMethodId: controller.selectedPricingMethod.value!.id,));
 
         }else{
-          Get.to(() => AddTaskPage(stepTwoResponse: response));
+          Get.to(() => AddTaskPage(stepTwoResponse: response,priceMethodId: controller.selectedPricingMethod.value!.id));
         }
       } else {
         Get.snackbar("خطأ في API", "فشل الإرسال. الاستجابة: ${data["message"] ?? 'Unknown error'}",

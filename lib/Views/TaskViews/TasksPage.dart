@@ -307,7 +307,8 @@ class _TasksPageState extends State<TasksPage> {
                         ),
                       ),
                     ),
-                    if(item.status.value=="in_progress"&&item.driver.name.value=='')
+
+                    if((item.status.value=="in_progress"||item.status.value=="advertised")&&item.driver.name.value=='')
                     IconButton(onPressed: (){
                       controller.pressedIndex.value=index;
                       Get.to(()=> ValidationOnePage(taskIdForEdit: item.id.value,taskModelForEdit: item));

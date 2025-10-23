@@ -89,7 +89,7 @@ class MapController extends GetxController {
               textField: markerId.toString(),
               geometry: point,
               textColor: Colors.transparent.value,
-              iconSize: 1,
+              iconSize: 0.3,
               iconOffset: [0.0, -17.0],
               symbolSortKey: markersMap[markerId]!.toDouble(),
               image: iniService.mapTargetIcon,

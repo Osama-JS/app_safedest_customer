@@ -14,6 +14,8 @@ class TaskModel {
   final RxString vehicle;
   final RxList<AdditionalDataModel> additionalData;
   final RxString createdAt;
+  final Rx<AdditionalDataDetails?> ad;
+  final RxInt pricingMethodId;
 
   TaskModel({
     int id = 0,
@@ -29,6 +31,8 @@ class TaskModel {
     String vehicle = '',
     List<AdditionalDataModel> additionalData = const [],
     String createdAt = '',
+    AdditionalDataDetails? ad,
+    int pricingMethodId=0,
   })  : id = id.obs,
         status = status.obs,
         closed = closed.obs,
@@ -41,7 +45,9 @@ class TaskModel {
         driver = driver ?? DriverModel(),
         vehicle = vehicle.obs,
         additionalData = additionalData.obs,
-        createdAt = createdAt.obs;
+        createdAt = createdAt.obs,
+        ad = (ad ?? AdditionalDataDetails()).obs,
+          pricingMethodId = pricingMethodId.obs;
 
   factory TaskModel.fromJson(Map<String, dynamic> json) {
     var additionalDataList = <AdditionalDataModel>[];
@@ -49,6 +55,11 @@ class TaskModel {
       additionalDataList = (json['additional_data'] as List)
           .map((item) => AdditionalDataModel.fromJson(item))
           .toList();
+    }
+
+    AdditionalDataDetails? parsedAd;
+    if (json['ad'] != null && json['ad'] is Map<String, dynamic>) {
+      parsedAd = AdditionalDataDetails.fromJson(json['ad']);
     }
 
     return TaskModel(
@@ -65,6 +76,8 @@ class TaskModel {
       vehicle: json['vehicle'] ?? '',
       additionalData: additionalDataList,
       createdAt: json['created_at'] ?? '',
+      ad: parsedAd,
+      pricingMethodId: json['pricing_method'] ?? 0,
     );
   }
 
@@ -83,12 +96,49 @@ class TaskModel {
       'vehicle': vehicle.value,
       'additional_data': additionalData.map((e) => e.toJson()).toList(),
       'created_at': createdAt.value,
+      'ad': ad.value?.toJson(),
+      'pricing_method': pricingMethodId.value,
     };
   }
 }
 
+// ------------------------------------------------------------------------------------------------------------------------
 
+class AdditionalDataDetails {
+  final double min;
+  final double max;
+  final String description;
 
+  AdditionalDataDetails({
+    this.min = 0.0,
+    this.max = 0.0,
+    this.description = '',
+  });
+
+  factory AdditionalDataDetails.fromJson(Map<String, dynamic> json) {
+    double parseNum(dynamic value) {
+      if (value is num) return value.toDouble();
+      if (value is String) return double.tryParse(value) ?? 0.0;
+      return 0.0;
+    }
+
+    return AdditionalDataDetails(
+      min: parseNum(json['min']),
+      max: parseNum(json['max']),
+      description: json['description'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'min': min,
+      'max': max,
+      'description': description,
+    };
+  }
+}
+
+// ------------------------------------------------------------------------------------------------------------------------
 
 class LocationModel {
   final RxDouble lat;
@@ -120,8 +170,16 @@ class LocationModel {
 
   factory LocationModel.fromJson(Map<String, dynamic> json) {
     return LocationModel(
-      lat: (json['lat'] is num) ? (json['lat'] as num).toDouble() : 0.0,
-      lng: (json['lng'] is num) ? (json['lng'] as num).toDouble() : 0.0,
+      lat: ((json['lat'] is String)
+          ? double.tryParse(json['lat'] as String)
+          : json['lat'] is num
+          ? (json['lat'] as num).toDouble()
+          : 0.0) ?? 0.0,
+      lng: ((json['lng'] is String)
+          ? double.tryParse(json['lng'] as String)
+          : json['lng'] is num
+          ? (json['lng'] as num).toDouble()
+          : 0.0) ?? 0.0,
       address: json['address'] ?? '',
       contactName: json['contact_name'] ?? '',
       contactPhone: json['contact_phone'] ?? '',
@@ -145,7 +203,7 @@ class LocationModel {
   }
 }
 
-
+// ------------------------------------------------------------------------------------------------------------------------
 
 class DriverModel {
   final RxString name;
@@ -177,32 +235,46 @@ class DriverModel {
   }
 }
 
-
+// ------------------------------------------------------------------------------------------------------------------------
 
 class AdditionalDataModel {
+  final RxString type;
   final RxString label;
   final RxString value;
+  final Rx<DateTime?> expirationDate;
 
   AdditionalDataModel({
-    String label = '',
-    String value = '',
-  })  : label = label.obs,
-        value = value.obs;
+    required String type,
+    required String label,
+    required String value,
+    DateTime? expiration,
+  })
+      : type = type.obs,
+        label = label.obs,
+        value = value.obs,
+        expirationDate = expiration.obs;
 
   factory AdditionalDataModel.fromJson(Map<String, dynamic> json) {
+    DateTime? parsedExpiration;
+    var expirationString = json['expiration'];
+    if (expirationString != null) {
+      parsedExpiration = DateTime.tryParse(expirationString);
+    }
+
     return AdditionalDataModel(
+      type: json['type'] ?? 'string',
       label: json['label'] ?? '',
       value: json['value'] ?? '',
+      expiration: parsedExpiration,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'type': type.value,
       'label': label.value,
       'value': value.value,
+      'expiration': expirationDate.value?.toIso8601String().substring(0, 10),
     };
   }
 }
-
-
-

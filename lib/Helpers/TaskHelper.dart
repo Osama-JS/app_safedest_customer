@@ -70,6 +70,31 @@ class TaskHelper{
 
     return data;
   }
+  getAddIni2()async{
+
+    var  url = Uri.parse("${globals.public_uri}template");
+
+
+
+    var response = await http.get(url, headers: {
+      "Accept": "application/json",
+      "Accept-Language": global_methods.getLanguage(),
+      "content-type": "application/json",
+
+    }).timeout(
+        const Duration(minutes: 1),
+        onTimeout: () {
+          return http.Response('Errorr', 408);
+        }
+    );
+    print("saeeeeeeeeeeedddddddd data: ${response.body}");
+    print("saeeeeeeeeeeedddddddd data: ${response.statusCode}");
+
+    var data = jsonDecode(response.body);
+    print("saeeeeeeeeeeedddddddd data: ${jsonDecode(response.body)}");
+
+    return data;
+  }
 
 
 

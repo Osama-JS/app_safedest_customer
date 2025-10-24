@@ -9,7 +9,7 @@ import '../Globals/global_methods.dart' as global_methods;
 
 class TaskHelper{
 
-  getData(int page,String sortBy,String search,  var token)async{
+  getData(int page,String sortBy,String filter,String search,  var token)async{
 
     var  url = Uri.parse("${globals.public_uri}tasks/data");
 
@@ -18,6 +18,7 @@ class TaskHelper{
       "per_page":10,
       "sort_by":sortBy,
       "search":search,
+      "status":filter,
 
     });
 

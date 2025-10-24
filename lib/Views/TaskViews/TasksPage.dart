@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
+import 'package:save_dest_customer/Views/TaskViews/TasksAdPage.dart';
 
 import '../../Controllers/TaskController.dart';
 import '../../Controllers/TransactionController.dart';
@@ -33,6 +34,17 @@ class _TasksPageState extends State<TasksPage> {
     super.initState();
     globals.dashboardIndex=1;
   }
+
+
+  final List<String> filters = [
+    'running',
+    'completed',
+  ];
+
+
+  RxInt selectedFilter = 0.obs;
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,6 +56,9 @@ class _TasksPageState extends State<TasksPage> {
         centerTitle: false,
         title: Text('all_tasks'.tr,style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 16),),
         actions: [
+          IconButton(onPressed: (){
+            Get.to(()=> TasksAdPage());
+          }, icon: Icon(Icons.ads_click_outlined)),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 1.0),
             child: IconButton(
@@ -157,7 +172,53 @@ class _TasksPageState extends State<TasksPage> {
           ),
         ],
       ),
-      body: _buildList(),
+      body: Column(
+        children: [
+          Obx(()=>  Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: List.generate(filters.length, (index) {
+              RxBool isActive = (selectedFilter.value == index).obs;
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    selectedFilter.value = index;
+                    controller.selectedFilterOption.value=filters[index];
+                    loadInitialData();
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    margin: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                      color: isActive.value
+                          ? MyColors.primaryColor
+                          : Colors.transparent,
+                      border: isActive.value
+                          ? null
+                          : Border.all(color: MyColors.gray, width: 1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Text(
+                        filters[index].tr,
+                        style: TextStyle(
+                          color: isActive.value ? Colors.white : Colors.grey.shade700,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+          ),
+          const SizedBox(height: 10),
+
+          Expanded(child: _buildList()),
+        ],
+      ),
 
 
       floatingActionButton: FloatingActionButton(

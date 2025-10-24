@@ -4,29 +4,29 @@ import 'package:get/get.dart';
 
 import '../../shared_prff.dart';
 import '../../Globals/global_methods.dart' as global_methods;
+import '../Helpers/TaskAdHelper.dart';
 import '../Helpers/TaskHelper.dart';
-import '../Models/TaskModel.dart';
+import '../Models/TaskAdModel.dart';
 
-class TaskController extends GetxController {
-
-
+class TaskAdController extends GetxController {
 
 
-  TaskHelper helperData =  TaskHelper();
+
+
+  TaskAdHelper helperData =  TaskAdHelper();
 
 
 
   RxInt pressedIndex= 0.obs;
   RxBool isLoadingData = true.obs;
 
-  RxList<TaskModel> dataList = <TaskModel>[].obs;
+  RxList<TaskAdModel> dataList = <TaskAdModel>[].obs;
 
   RxInt currentPage = 1.obs;
   RxInt total= 0.obs;
   RxInt lastItem= 0.obs;
   RxBool isRefreshing = false.obs;
   RxBool isFirstTime = true.obs;
-  RxString selectedSortOption="created_at".obs;
   RxString selectedFilterOption="running".obs;
   RxString search="".obs;
 
@@ -39,7 +39,7 @@ class TaskController extends GetxController {
     try {
       // isLoadingData.value = true;
 
-      var data = await helperData.getData(currentPage.value,selectedSortOption.value,selectedFilterOption.value,search.value,Token_pref.getToken()!);
+      var data = await helperData.getData(currentPage.value,selectedFilterOption.value,search.value,Token_pref.getToken()!);
 
 
 
@@ -47,29 +47,29 @@ class TaskController extends GetxController {
 
       if(data["status"]==200) {
 
-        final List<dynamic> dataListJson = data["data"]["tasks"];
-        lastItem.value = data["data"]["pagination"]["to"];
+        final List<dynamic> dataListJson = data["data"]["data"];
+        lastItem.value = data["data"]["pagination"]["to"]??0;
 
         if (isFirstTime.value) {
 
           dataList.clear();
-          dataList.value = dataListJson.map((item) => TaskModel.fromJson(item)).toList();
+          dataList.value = dataListJson.map((item) => TaskAdModel.fromJson(item)).toList();
 
           total.value = data["data"]["pagination"]["total"];
 
           isFirstTime.value = false;
         }else{
-          dataList.addAll(dataListJson.map((item) => TaskModel.fromJson(item)));
+          dataList.addAll(dataListJson.map((item) => TaskAdModel.fromJson(item)));
 
         }
         currentPage++;
       }
-print("saeeeeeeeeeeeeedddddddddd : ${data["data"]["tasks"][0]["ad"]}");
+
 
     } catch (e) {
       isThereError.value=true;
       errorMessage.value = e.toString();
-      global_methods.sendError("TaskController : $e");
+      global_methods.sendError("TaskAdController : $e");
 
       isLoadingData.value = false;
 

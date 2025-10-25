@@ -3,11 +3,10 @@ import 'package:get/get.dart';
 class Messages extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
-//english
-
+    //english
     'en': {
       "rs": "\u{e900}",
-      "emtyaz" : "Emtyaz",
+      "emtyaz": "Emtyaz",
       "welcome_message": "Welcome",
       "welcome_back_message": "Welcome back, log in to your account or ",
       "welcome_back_create": "create a new one",
@@ -26,7 +25,8 @@ class Messages extends Translations {
       "code_sent_to_number": "We have sent the confirmation code to the number",
       "resend_code": "Resend Code",
       "recover_password": "Recover Password",
-      "enter_phone_to_recover_password": "Enter your phone number to recover your password",
+      "enter_phone_to_recover_password":
+          "Enter your phone number to recover your password",
       "reset_password": "Reset Password",
       "create_new_password": "Create a new password",
       "new_password": "New Password",
@@ -35,7 +35,8 @@ class Messages extends Translations {
       "i_agree_to": "I agree to the",
       "privacy_policy": "Privacy Policy",
       "error": "Error",
-      "terms_and_conditions_must_be_confirmed": "Terms and conditions must be confirmed",
+      "terms_and_conditions_must_be_confirmed":
+          "Terms and conditions must be confirmed",
       "check_internet_connection": "Check Internet Connection",
       "login_with_another_account": "Login with another account",
       "enter_password_to_continue": "Enter your password to continue",
@@ -47,7 +48,8 @@ class Messages extends Translations {
       "payment_method": "Payment Method",
       "add_credit_card": "Add your credit card",
       "delivery_location": "Delivery Location",
-      "change_or_add_delivery_location": "Change or add a new delivery location",
+      "change_or_add_delivery_location":
+          "Change or add a new delivery location",
       "invite_friends": "Invite Friends",
       "get_5_sar_per_invite": "Get 5 SAR for each invite",
       "logout": "Logout",
@@ -128,8 +130,6 @@ class Messages extends Translations {
       "save": "Save",
       "go_back": "Go Back",
 
-
-
       "please_enter_booking_data": "Please enter booking data",
       "enter_number_of_people": "Enter number of people",
       "enter_date": "Enter date",
@@ -146,8 +146,10 @@ class Messages extends Translations {
       "faq_answers": "Answers to the most common questions",
 
       "instant_help": "Instant Help",
-      "contact_us_for_inquiries": "Contact us for any inquiries or technical issues",
-      "dedicated_support_team": "A dedicated support team is ready to assist you at any time. We are here to resolve all your queries",
+      "contact_us_for_inquiries":
+          "Contact us for any inquiries or technical issues",
+      "dedicated_support_team":
+          "A dedicated support team is ready to assist you at any time. We are here to resolve all your queries",
       "whatsapp": "WhatsApp",
       "email": "Email",
       "help_center": "Help Center",
@@ -159,20 +161,23 @@ class Messages extends Translations {
       "code_content": "Code Content",
       "meals": "Meals",
       "restaurants": "Restaurants",
-      "storage_permission_required": "Storage permission is required to save the image",
+      "storage_permission_required":
+          "Storage permission is required to save the image",
       "failed_to_create_image": "Failed to create image",
-      "code_saved_to_gallery_successfully": "Code saved to gallery successfully",
+      "code_saved_to_gallery_successfully":
+          "Code saved to gallery successfully",
       "failed_to_save_image": "Failed to save image",
       "error_occurred_while_saving": "An error occurred while saving",
       "share_qr_code": "Share QR Code",
       "error_occurred_while_sharing": "An error occurred while sharing",
       "see_all": "See all",
       "change_language": "Change Language",
-      "choose_language": "Choose the language that suits you from the available options",
+      "choose_language":
+          "Choose the language that suits you from the available options",
 
-      "completed": "Completed",
-      "canceled": "Canceled",
-      "pending": "Pending",
+      "task_completed": "Completed",
+      "task_canceled": "Canceled",
+      "task_pending": "Pending",
       "units": "Units",
       "discount": "Discount",
       "priceBeforeDiscount": "Price before discount",
@@ -180,21 +185,120 @@ class Messages extends Translations {
       "residual": "Residual",
       "used": "Used",
 
-
       "debit": "Debit",
+      "wallet_balance": "Wallet Balance",
+      "available_balance": "Available Balance",
+      "total_debit": "Total Debit",
+      "total_credit": "Total Credit",
+      "recent_transactions": "Recent Transactions",
+      "view_all": "View All",
+      "no_transactions_recorded": "No transactions recorded",
+      "transaction_history": "Transaction History",
+      "transaction": "Transaction",
 
+      // Error messages
+      "error_title": "Error",
+      "template_data_not_loaded": "Template data not loaded.",
+      "file_required": "File {field} is required.",
+      "file_and_expiration_required":
+          "File and expiration date for {field} are required.",
+      "fill_all_required_fields": "Please fill all required fields correctly.",
+      "success_title": "Success",
+      "verification_successful": "Verification successful",
+      "api_error": "API Error",
+      "send_failed": "Send failed",
+      "send_error": "Send Error",
+      "server_connection_error":
+          "An error occurred while connecting to the server",
 
+      // Additional template fields
+      "additional_template_data": "Additional Template Data",
+      "field_required": "{field} is required",
+      "invalid_url_format": "Invalid URL format",
+      "enter_field": "Enter {field}",
+      "text_field_required": "Text field for {field} is required",
+      "choose_date": "Choose date",
+      "selected_file": "Selected file",
+      "old_saved_file": "Old saved file",
+      "choose_file": "Choose file",
+      "change_selected_file": "Change selected file",
+      "expiration_date": "Expiration date",
+      "expiration_date_required": "Expiration date is required",
+      "choose_expiration_date": "Choose expiration date",
 
+      // Task status
+      "status_completed": "Completed",
+      "status_pending": "In Progress",
+      "status_cancelled": "Cancelled",
+      "paid": "Paid",
+      "unpaid": "Unpaid",
+      "cash": "Cash",
+      "electronic": "Electronic",
+      "task_pickup": "Pickup",
+      "task_delivery": "Delivery",
+      "task_driver": "Driver",
+      "additional_details": "Additional Details",
+      "time": "Time",
+
+      // Add task page
+      "step_3_edit_review": "Step 3: Edit and Review",
+      "step_3_final_review": "Step 3: Final Review",
+      "pricing_summary": "Pricing Summary",
+      "pricing_method": "Pricing Method",
+      "estimated_distance": "Estimated Distance",
+      "km": "km",
+      "base_price": "Base Price",
+      "distance_price": "Distance Price",
+      "service_commission": "Service Fee",
+      "vat": "VAT",
+      "riyal": "Riyal",
+      "expected_total": "Expected Total",
+      "bidding_options": "Bidding Options",
+      "max_price": "Maximum Price",
+      "min_price": "Minimum Price",
+      "pricing_notes": "Pricing Notes (Optional)",
+      "enter_valid_positive_price":
+          "Please enter a valid positive price for {field}",
+      "save_changes": "Save Changes",
+      "send_final_task": "Send Final Task",
+      "task_added_successfully": "Task added successfully",
+      "task_updated_successfully": "Task updated successfully",
+
+      // Language
+      "arabic": "Arabic",
+
+      // Additional messages
+      "pricing_data_empty": "Received pricing data is empty.",
+      "loading_error": "Loading Error",
+      "failed_to_load_pricing": "Failed to load pricing summary",
+      "add_bidding_price": "Add Bidding Price",
+      "response": "Response",
+      "company_name": "Company Name",
+      "company_address": "Company Address",
+      "company_information": "Company Information (Optional)",
+      "basic_data": "Basic Data",
+      "additional_info": "Additional Information",
+      "review_confirm": "Review & Confirm",
+      "previous": "Previous",
+      "not_specified": "Not Specified",
+      "file_selected": "File Selected",
+      "no_file_selected": "No File Selected",
+      "no_text_entered": "No Text Entered",
+      "no_date_selected": "No Date Selected",
+      "tap_to_select_file": "Tap to Select File",
+      "file_selected_successfully": "File selected successfully: {file}",
+      "file_selection_error": "Error selecting file",
     },
     // arabic
-/*
+    /*
     "short_article".tr,
 */
     'ar': {
       "rs": "\u{e900}",
-      "emtyaz" : "امتياز",
+      "emtyaz": "امتياز",
       "welcome_message": "اهلا وسهلا",
-      "welcome_back_message": "مرحبا بك معنا مجددا، قم بتسجيل الدخول إلى حسابك أو قم ",
+      "welcome_back_message":
+          "مرحبا بك معنا مجددا، قم بتسجيل الدخول إلى حسابك أو قم ",
       "welcome_back_create": "بإنشاء حساب جديد",
       "phone_number": "رقم الهاتف",
       "password": "كلمة المرور",
@@ -211,7 +315,8 @@ class Messages extends Translations {
       "code_sent_to_number": "لقد قمنا بإرسال رمز التأكيد إلى الرقم",
       "resend_code": "إعادة إرسال الكود",
       "recover_password": "استعادة كلمة المرور",
-      "enter_phone_to_recover_password": "قم بإدخال رقم الهاتف لاستعادة كلمة المرور",
+      "enter_phone_to_recover_password":
+          "قم بإدخال رقم الهاتف لاستعادة كلمة المرور",
       "reset_password": "إعادة ضبط كلمة المرور",
       "create_new_password": "قم بإنشاء كلمة مرور جديدة",
       "new_password": "كلمة المرور الجديدة",
@@ -232,7 +337,8 @@ class Messages extends Translations {
       "payment_method": "طريقة الدفع",
       "add_credit_card": "إضافة بطاقة الائتمان الخاصة بك",
       "delivery_location": "موقع التوصيل",
-      "change_or_add_delivery_location": "تغيير موقع التوصيل أو إضافة موقع جديد",
+      "change_or_add_delivery_location":
+          "تغيير موقع التوصيل أو إضافة موقع جديد",
       "invite_friends": "دعوة الأصدقاء",
       "get_5_sar_per_invite": "احصل على ٥ ريال لكل دعوة",
       "logout": "تسجيل الخروج",
@@ -305,7 +411,8 @@ class Messages extends Translations {
       "this_field": "هذا الحقل",
       "add_card": "إضافة بطاقة",
       "no_credit_cards": "لا يوجد لديك أي بطاقة ائتمان (:",
-      "no_cards_added": "يبدو أنك لم تقم بإضافة أي بطاقة ائتمان أو خصم. يمكنك بسهولة إضافة بطاقة الآن.",
+      "no_cards_added":
+          "يبدو أنك لم تقم بإضافة أي بطاقة ائتمان أو خصم. يمكنك بسهولة إضافة بطاقة الآن.",
 
       "crop_image": "قص الصورة",
       "change_profile_picture": "تغيير صورة الملف الشخصي",
@@ -314,9 +421,6 @@ class Messages extends Translations {
       "passwords_not_equal": "كلمة المرور وتأكيد كلمة المرور غير متطابقتين",
       "save": "حفظ",
       "go_back": "العودة",
-
-
-
 
       "please_enter_booking_data": "الرجاء ادخل بيانات الحجز",
       "enter_number_of_people": "ادخل عدد الاشخاص",
@@ -335,7 +439,8 @@ class Messages extends Translations {
 
       "instant_help": "مساعدة فورية",
       "contact_us_for_inquiries": "اتصل بنا لأي استفسار أو مشكلة فنية",
-      "dedicated_support_team": "فريق دعم متخصص جاهز لمساعدتك في أي وقت. نحن هنا لحل جميع استفساراتك",
+      "dedicated_support_team":
+          "فريق دعم متخصص جاهز لمساعدتك في أي وقت. نحن هنا لحل جميع استفساراتك",
       "whatsapp": "واتس اب",
       "email": "ايميل",
       "help_center": "مركز المساعدة",
@@ -369,11 +474,106 @@ class Messages extends Translations {
       "used": "المستخدم",
 
       "debit": "ايداع",
+      "wallet_balance": "رصيد المحفظة",
+      "available_balance": "الرصيد المتاح",
+      "total_debit": "إجمالي المدين",
+      "total_credit": "إجمالي الدائن",
+      "recent_transactions": "المعاملات الأخيرة",
+      "view_all": "عرض الكل",
+      "no_transactions_recorded": "لا توجد معاملات مسجلة",
+      "transaction_history": "تاريخ المعاملات",
+      "transaction": "معاملة",
 
+      // Error messages
+      "error_title": "خطأ",
+      "template_data_not_loaded": "لم يتم تحميل بيانات القالب.",
+      "file_required": "ملف {field} مطلوب.",
+      "file_and_expiration_required":
+          "الملف وتاريخ الانتهاء لـ {field} مطلوبان.",
+      "fill_all_required_fields": "يرجى ملء جميع الحقول المطلوبة بشكل صحيح.",
+      "success_title": "نجاح",
+      "verification_successful": "تم التحقق بنجاح",
+      "api_error": "خطأ في API",
+      "send_failed": "فشل الإرسال",
+      "send_error": "خطأ الإرسال",
+      "server_connection_error": "حدث خطأ أثناء الاتصال بالخادم",
 
+      // Additional template fields
+      "additional_template_data": "بيانات القالب الإضافية",
+      "field_required": "{field} مطلوب",
+      "invalid_url_format": "صيغة الرابط غير صحيحة",
+      "enter_field": "أدخل {field}",
+      "text_field_required": "حقل النص لـ {field} مطلوب",
+      "choose_date": "اختر تأريخ",
+      "selected_file": "الملف المختار",
+      "old_saved_file": "ملف قديم محفوظ",
+      "choose_file": "اختر ملف",
+      "change_selected_file": "تغيير الملف المختار",
+      "expiration_date": "تأريخ الانتهاء",
+      "expiration_date_required": "تأريخ الانتهاء مطلوب",
+      "choose_expiration_date": "اختر تأريخ الانتهاء",
+
+      // Task status
+      "status_completed": "مكتملة",
+      "status_pending": "قيد التنفيذ",
+      "status_cancelled": "ملغاة",
+      "paid": "مدفوع",
+      "unpaid": "غير مدفوع",
+      "cash": "نقدًا",
+      "electronic": "إلكتروني",
+      "task_pickup": "الاستلام",
+      "task_delivery": "التسليم",
+      "task_driver": "السائق",
+      "additional_details": "تفاصيل إضافية",
+      "time": "الوقت",
+
+      // Add task page
+      "step_3_edit_review": "الخطوة 3: تعديل ومراجعة",
+      "step_3_final_review": "الخطوة 3: المراجعة النهائية",
+      "pricing_summary": "ملخص التسعير",
+      "pricing_method": "طريقة التسعير",
+      "estimated_distance": "المسافة المقدرة",
+      "km": "كم",
+      "base_price": "السعر الأساسي",
+      "distance_price": "سعر المسافة",
+      "service_commission": "رسوم الخدمة",
+      "vat": "ضريبة القيمة المضافة",
+      "riyal": "ريال",
+      "expected_total": "الإجمالي المتوقع",
+      "bidding_options": "خيارات المزايدة",
+      "max_price": "الحد الأقصى للسعر",
+      "min_price": "الحد الأدنى للسعر",
+      "pricing_notes": "ملاحظات حول التسعير (اختياري)",
+      "enter_valid_positive_price": "يرجى إدخال سعر صحيح وموجب لـ {field}",
+      "save_changes": "حفظ التعديلات",
+      "send_final_task": "إرسال المهمة النهائية",
+      "task_added_successfully": "تم إضافة المهمة بنجاح",
+      "task_updated_successfully": "تم تعديل المهمة بنجاح",
+
+      // Language
+      "arabic": "العربية",
+
+      // Additional messages
+      "pricing_data_empty": "بيانات التسعير المستلمة فارغة.",
+      "loading_error": "خطأ تحميل",
+      "failed_to_load_pricing": "فشل تحليل ملخص التسعير",
+      "add_bidding_price": "إضافة تسعيرة مناقصة (Bidding)",
+      "response": "الاستجابة",
+      "company_name": "اسم الشركة",
+      "company_address": "عنوان الشركة",
+      "company_information": "معلومات الشركة (اختياري)",
+      "basic_data": "البيانات الأساسية",
+      "additional_info": "المعلومات الإضافية",
+      "review_confirm": "مراجعة وتأكيد",
+      "previous": "السابق",
+      "not_specified": "غير محدد",
+      "file_selected": "تم اختيار ملف",
+      "no_file_selected": "لم يتم اختيار ملف",
+      "no_text_entered": "لم يتم إدخال نص",
+      "no_date_selected": "لم يتم اختيار تاريخ",
+      "tap_to_select_file": "اضغط لاختيار ملف",
+      "file_selected_successfully": "تم اختيار الملف بنجاح: {file}",
+      "file_selection_error": "خطأ في اختيار الملف",
     },
-
-
-
   };
 }

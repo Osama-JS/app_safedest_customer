@@ -20,7 +20,8 @@ class ProfileScreenPage extends StatefulWidget {
   State<ProfileScreenPage> createState() => _ProfileScreenPageState();
 }
 
-class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTickerProviderStateMixin {
+class _ProfileScreenPageState extends State<ProfileScreenPage>
+    with SingleTickerProviderStateMixin {
   final iniService = InitialService.to;
 
   @override
@@ -97,8 +98,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
     );
   }
 
-
-  User_Helper helperData =  User_Helper();
+  User_Helper helperData = User_Helper();
 
   logout() async {
     if (!await global_methods.isInternetAvailable()) {
@@ -113,7 +113,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
           Get.snackbar("success".tr, data["message"]);
           Token_pref.setToken("");
           User_pref.setUser("");
-          globals.user=null;
+          globals.user = null;
           Get.off(Splash());
         } else {
           Get.snackbar("error".tr, data["message"]);
@@ -135,8 +135,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
         ListTile(
           leading: Icon(icon, color: MyColors.lightPrimaryColor),
           title: Text(title, style: TextStyle(fontSize: 16)),
-          trailing: Icon(
-              Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
           onTap: onTap,
         ),
         Divider(),
@@ -146,30 +145,32 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-        overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top]);
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top],
+    );
 
     return Scaffold(
       backgroundColor: Theme_pref.getTheme() == 0
           ? MyColors.lightBackground
           : MyColors.darkBackground,
-      appBar:
-      AppBar(
+      appBar: AppBar(
         backgroundColor: MyColors.backgroundColor,
         surfaceTintColor: MyColors.backgroundColor,
-        title:Text("profile".tr),
+        title: Text("profile".tr),
         centerTitle: true,
-              actions: [
-                IconButton(onPressed: (){
-
-                  Token_pref.setToken("");
-                  User_pref.setUser("");
-                  globals.user=null;
-                  Get.off(Splash());
-                  // _showConfirmationDialog();
-
-                }, icon: Icon(Icons.logout)),
-              ],
+        actions: [
+          IconButton(
+            onPressed: () {
+              Token_pref.setToken("");
+              User_pref.setUser("");
+              globals.user = null;
+              Get.off(Splash());
+              // _showConfirmationDialog();
+            },
+            icon: Icon(Icons.logout),
+          ),
+        ],
       ),
 
       body: SafeArea(
@@ -181,39 +182,43 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
               Center(
                 child: Column(
                   children: [
-                    Obx(()=> Container(
-                          decoration: BoxDecoration(
-                              color: MyColors.primaryColor.withAlpha(20),
-                              borderRadius: BorderRadius.circular(100)
-                          ),
-                          padding: const EdgeInsets.all(16),
-                          child:
-                          iniService.userImage.value != ""
-                              ? CustomImageView(
-                            imagePath:  iniService.userImage.value ,
-                            height: 48,
-                            width: 48,
-                            fit: BoxFit.cover,
-                            alignment: Alignment.center,
-                            onTap: () {
-
-                            },
-                          )
-                              :
-                          Icon(Icons.person, size: 38,
-                            color: MyColors.primaryColor,)
+                    Obx(
+                      () => Container(
+                        decoration: BoxDecoration(
+                          color: MyColors.primaryColor.withAlpha(20),
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+                        padding: const EdgeInsets.all(16),
+                        child: iniService.userImage.value != ""
+                            ? CustomImageView(
+                                imagePath: iniService.userImage.value,
+                                height: 48,
+                                width: 48,
+                                fit: BoxFit.cover,
+                                alignment: Alignment.center,
+                                onTap: () {},
+                              )
+                            : Icon(
+                                Icons.person,
+                                size: 38,
+                                color: MyColors.primaryColor,
+                              ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Obx(()=> Text(
+                    Obx(
+                      () => Text(
                         iniService.userName.value,
-                        style: TextStyle(fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: MyColors.lightPrimaryColor),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: MyColors.lightPrimaryColor,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Obx(()=> Text(
+                    Obx(
+                      () => Text(
                         iniService.userEmail.value,
                         style: TextStyle(fontSize: 14, color: Colors.grey),
                       ),
@@ -232,19 +237,14 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
 
               SizedBox(
                 width: double.maxFinite,
-                child: Divider(
-                  color: MyColors.borderColor.withAlpha(90),
-                ),
+                child: Divider(color: MyColors.borderColor.withAlpha(90)),
               ),
               ListTile(
-
-                leading:
-                    Icon(Icons.language,size: 20,),
-
+                leading: Icon(Icons.language, size: 20),
 
                 title: Text(
                   "display_language".tr,
-                  style:global_methods.textBody(),
+                  style: global_methods.textBody(),
                 ),
                 trailing: GestureDetector(
                   onTap: () {
@@ -252,7 +252,10 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
                       backgroundColor: MyColors.backgroundColor,
                       context: context,
                       shape: const RoundedRectangleBorder(
-                          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(20),
+                        ),
+                      ),
                       builder: (_) {
                         return Container(
                           padding: const EdgeInsets.all(16),
@@ -282,11 +285,12 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
                     padding: const EdgeInsets.all(0.0),
                     child: CircleAvatar(
                       radius: 20,
-                      backgroundImage: AssetImage('assets/flags/${selectedLanguage.value}.png'),
+                      backgroundImage: AssetImage(
+                        'assets/flags/${selectedLanguage.value}.png',
+                      ),
                     ),
                   ),
                 ),
-
 
                 // Padding(
                 //   padding: const EdgeInsetsDirectional.only(start: 24),
@@ -329,12 +333,16 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
         ),
       ),
     );
-
   }
 
   RxString selectedLanguage = Selected_Language.getLanguage()!.obs;
 
-  Widget buildListTile(BuildContext context ,String languageCode , String countryCode , RxString selectedLanguage) {
+  Widget buildListTile(
+    BuildContext context,
+    String languageCode,
+    String countryCode,
+    RxString selectedLanguage,
+  ) {
     return ListTile(
       leading: ClipOval(
         child: Image.asset(
@@ -344,7 +352,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
           fit: BoxFit.cover,
         ),
       ),
-      title: Text(languageCode == "ar" ? "العربية" : "English"),
+      title: Text(languageCode == "ar" ? "arabic".tr : "English"),
       trailing: selectedLanguage.value == languageCode
           ? const Icon(Icons.check, color: Colors.green)
           : null,
@@ -358,6 +366,4 @@ class _ProfileScreenPageState extends State<ProfileScreenPage> with SingleTicker
       },
     );
   }
-
-
 }

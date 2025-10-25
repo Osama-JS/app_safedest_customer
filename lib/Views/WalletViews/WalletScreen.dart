@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:save_dest_customer/Globals/MyColors.dart';
-// import 'package:save_dest_customer/Views/Widgets/ProgressWithIcon.dart'; // افترض وجودها
-// import '../../Controllers/WalletController.dart';
-import '../../Helpers/WalletHelper.dart'; // افترض وجودها
-import '../../Models/TransactionModel.dart'; // افترض وجودها
-import '../../shared_prff.dart'; // افترض وجودها
+import '../../Helpers/WalletHelper.dart';
+import '../../Models/TransactionModel.dart';
+import '../../shared_prff.dart';
 import '../../../Globals/global_methods.dart' as global_methods;
 import '../Widgets/ProgressWithIcon.dart';
 import 'TransactionsPage.dart';
 
-
-
-
 class WalletController extends GetxController {
-
   RxInt walletId = 0.obs;
   RxBool walletStatus = false.obs;
   RxDouble walletBalance = 0.0.obs;
@@ -30,33 +24,23 @@ class WalletController extends GetxController {
 
   WalletHelper helperData = WalletHelper();
 
-  // @override
-  // void onInit() {
-  //   super.onInit();
-  //
-  //   getData();
-  // }
-
   void getData() async {
     try {
-      print("ffffffffffffffffffffffff0");
       isLoading.value = true;
-      var data = await helperData.getData(Token_pref.getToken()); // الكود الأصلي
-
+      var data = await helperData.getData(Token_pref.getToken());
 
       if (data["status"] == 200) {
         walletId.value = data["data"]["wallet"]["id"] ?? 0;
         walletStatus.value = data["data"]["wallet"]["status"] ?? false;
-        walletBalance.value = (data["data"]["wallet"]["balance"] ?? 0).toDouble();
+        walletBalance.value = (data["data"]["wallet"]["balance"] ?? 0)
+            .toDouble();
         walletCurrency.value = data["data"]["wallet"]["currency"] ?? '';
-
-        // totalDebit.value = (data["data"]["statistics"]["total_debit"] ?? 0).toDouble();
-        // totalCredit.value = (data["data"]["statistics"]["total_credit"] ?? 0).toDouble();
-        // netBalance.value = (data["data"]["statistics"]["net_balance"] ?? 0).toDouble();
 
         final List<dynamic> dataListJson = data["data"]["recent_transactions"];
         transactionDataList.clear();
-        transactionDataList.value = dataListJson.map((item) => TransactionModel.fromJson(item)).toList();
+        transactionDataList.value = dataListJson
+            .map((item) => TransactionModel.fromJson(item))
+            .toList();
       }
     } catch (e) {
       global_methods.sendError("WalletController : $e");
@@ -66,7 +50,6 @@ class WalletController extends GetxController {
   }
 }
 
-
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
 
@@ -74,322 +57,344 @@ class WalletScreen extends StatefulWidget {
   State<WalletScreen> createState() => _WalletScreenState();
 }
 
-class _WalletScreenState extends State<WalletScreen>  {
-
-   WalletController controller = Get.put(WalletController());
+class _WalletScreenState extends State<WalletScreen> {
+  WalletController controller = Get.put(WalletController());
 
   @override
   void initState() {
     super.initState();
-controller.getData();
+    controller.getData();
   }
 
-   @override
-   void dispose() {
-     super.dispose();
-   }
+  @override
+  void dispose() {
+    super.dispose();
+  }
 
-
-   @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: MyColors.backgroundColor,
-
       appBar: AppBar(
-        title: const Text('المحفظة والإحصائيات'),
-        backgroundColor: MyColors.appBarColor,
+        title: Text(
+          'wallet'.tr,
+          style: TextStyle(
+            color: MyColors.textPrimaryColor,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: MyColors.whiteColor,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        centerTitle: true,
+        leading: const SizedBox(),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.receipt_long, color: MyColors.primaryColor),
+            tooltip: 'transaction_history'.tr,
+            onPressed: () {
+              Get.to(() => TransactionsPage());
+            },
+          ),
+        ],
       ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          controller.getData();
+        },
+        child: Obx(() {
+          if (controller.isLoading.value) {
+            return const Center(child: ProgressWithIcon());
+          }
 
-      // استخدام Obx لمراقبة حالة التحميل
-      body: Obx(() {
-        if (controller.isLoading.value) {
-          return const Center(child: ProgressWithIcon());
-        }
+          return SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Wallet Balance Card
+                _buildWalletBalanceCard(),
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. رأس المحفظة
-              _buildWalletHeader(),
-              const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-              // 2. بطاقة الإحصائيات
-              _buildStatisticsCard(),
-              const SizedBox(height: 20),
+                // Recent Transactions
+                _buildTransactionListCard(),
 
-              // 3. المعاملات الأخيرة
-              Container(
-                decoration: global_methods.appDecoration(),
-                width: double.maxFinite,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    spacing: 16,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("latest_transactions".tr,style: global_methods.textSubTitle(),textAlign: TextAlign.center,),
-                      Divider(color: Colors.grey.withAlpha(50),height: 1,),
-                      Obx(()=>
-                      controller.transactionDataList.isNotEmpty?
-                      Column(
-                        spacing: 8,
-                        children: [
-                          for(TransactionModel item in controller.transactionDataList)
-                            _buildTransactionCard(item),
+                const SizedBox(height: 100), // Bottom padding
+              ],
+            ),
+          );
+        }),
+      ),
+    );
+  }
 
-                        ],
-                      ):
-                      Text("no_transactions".tr),
-                      ),
-                      Divider(color: Colors.grey.withAlpha(50),height: 1,),
-                      Obx(()=>
-                      controller.transactionDataList.isNotEmpty? GestureDetector(
-                          onTap: () {
-                            Get.to( TransactionsPage());
-                          },
-                          child: Text("view_more".tr,style: global_methods.textPrimaryBody(),textAlign: TextAlign.center,)):
-                      const SizedBox()
-                      ),
-                    ],
+  // Wallet Balance Card مطابق لـ safedest_driver
+  Widget _buildWalletBalanceCard() {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.all(16),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              MyColors.primaryColor,
+              MyColors.primaryColor.withOpacity(0.8),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  color: Colors.white,
+                  size: 28,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'wallet_balance'.tr,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-
-
-
-
-            ],
-          ),
-        );
-      }),
-    );
-  }
-
-  // 1. تصميم رأس المحفظة
-  Widget _buildWalletHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [MyColors.primaryColor, MyColors.primaryColor.withAlpha(110)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 5)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'رصيدك الحالي',
-            style: TextStyle(color: Colors.white70, fontSize: 16),
-          ),
-          const SizedBox(height: 10),
-          Obx(() => Text(
-            '${controller.walletBalance.value.toStringAsFixed(2)} ${controller.walletCurrency.value}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 36,
-              fontWeight: FontWeight.w900,
+                const Spacer(),
+                Icon(
+                  Icons.visibility,
+                  color: Colors.white.withOpacity(0.8),
+                  size: 20,
+                ),
+              ],
             ),
-          ),
-          ),
-          const SizedBox(height: 15),
-          Obx(() => Row(
-            children: [
-              Icon(
-                controller.walletStatus.value ? Icons.check_circle : Icons.error,
-                color: controller.walletStatus.value ? Colors.greenAccent : Colors.amberAccent,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                controller.walletStatus.value ? 'المحفظة نشطة' : 'المحفظة غير نشطة',
-                style: const TextStyle(color: Colors.white70, fontSize: 14),
-              ),
-            ],
-          ),
-          ),
-        ],
-      ),
-    );
-  }
 
-  // 2. تصميم بطاقة الإحصائيات
-  Widget _buildStatisticsCard() {
-    return Card(
-      elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Obx(() => _buildStatItem('إجمالي المدين', controller.totalDebit.value, Colors.red.shade700, Icons.arrow_upward)),
-            Obx(() => _buildStatItem('إجمالي الدائن', controller.totalCredit.value, Colors.green.shade700, Icons.arrow_downward)),
-            Obx(() => _buildStatItem('الرصيد الصافي', controller.netBalance.value, Colors.blue.shade700, Icons.account_balance)),
+            const SizedBox(height: 20),
+
+            // Main Balance
+            Obx(
+              () => Text(
+                '${controller.walletBalance.value.toStringAsFixed(2)} ${controller.walletCurrency.value}',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              'available_balance'.tr,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: 16,
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Additional Info
+            Row(
+              children: [
+                Expanded(
+                  child: _buildBalanceInfo(
+                    'total_debit'.tr,
+                    '${controller.totalDebit.value.toStringAsFixed(2)}',
+                    Icons.trending_up,
+                  ),
+                ),
+                Container(
+                  width: 1,
+                  height: 40,
+                  color: Colors.white.withOpacity(0.3),
+                ),
+                Expanded(
+                  child: _buildBalanceInfo(
+                    'total_credit'.tr,
+                    '${controller.totalCredit.value.toStringAsFixed(2)}',
+                    Icons.trending_down,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  // عنصر إحصائي فرعي (يستقبل Double)
-  Widget _buildStatItem(String title, double value, Color color, IconData icon) {
+  Widget _buildBalanceInfo(String label, String amount, IconData icon) {
     return Column(
       children: [
-        Icon(icon, color: color, size: 30),
-        const SizedBox(height: 5),
+        Icon(icon, color: Colors.white.withOpacity(0.8), size: 20),
+        const SizedBox(height: 8),
         Text(
-          value.toStringAsFixed(2),
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
+          amount,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: 3),
+        const SizedBox(height: 4),
         Text(
-          title,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+          label,
+          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12),
+          textAlign: TextAlign.center,
         ),
       ],
     );
   }
 
-  // 3. تصميم قائمة المعاملات
-  Widget _buildTransactionsList() {
-    return Obx(() => ListView.builder(
-      physics: const NeverScrollableScrollPhysics(),
-      shrinkWrap: true,
-      itemCount: controller.transactionDataList.length,
-      itemBuilder: (context, index) {
-        return _buildTransactionCard(controller.transactionDataList[index]);
-      },
-    ),
+  // Transaction List Card مطابق لـ safedest_driver
+  Widget _buildTransactionListCard() {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.receipt_long,
+                  color: MyColors.primaryColor,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'recent_transactions'.tr,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: MyColors.textPrimaryColor,
+                  ),
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () {
+                    Get.to(() => TransactionsPage());
+                  },
+                  child: Text('view_all'.tr),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            Obx(() {
+              if (controller.transactionDataList.isEmpty) {
+                return _buildEmptyTransactionsState();
+              }
+
+              return Column(
+                children: controller.transactionDataList
+                    .map((transaction) => _buildTransactionItem(transaction))
+                    .toList(),
+              );
+            }),
+          ],
+        ),
+      ),
     );
   }
 
-  // بطاقة المعاملة
-  Widget _buildTransactionCard(TransactionModel item) {
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child:
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-
-            Obx(()=> ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item.image.value,
-                width: 50,
-                height: 50,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.receipt, size: 30),
-              ),
+  Widget _buildEmptyTransactionsState() {
+    return Container(
+      padding: const EdgeInsets.all(40),
+      child: Column(
+        children: [
+          Icon(
+            Icons.receipt_long_outlined,
+            size: 64,
+            color: MyColors.neutral300,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'no_transactions_recorded'.tr,
+            style: TextStyle(
+              fontSize: 16,
+              color: MyColors.neutral400,
+              fontWeight: FontWeight.w500,
             ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTransactionItem(TransactionModel transaction) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: MyColors.neutral50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: MyColors.outlineVariantColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: transaction.transactionType.value == 'credit'
+                  ? Colors.green.withOpacity(0.1)
+                  : Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
             ),
-
-            // Obx(()=> Container(
-            //   width: 50,
-            //   height: 50,
-            //   decoration: BoxDecoration(
-            //     color: item.transactionType.value=="debit".tr ? Colors.red.withAlpha(30) : Colors.green.withAlpha(30),
-            //     borderRadius: BorderRadius.circular(8),
-            //   ),
-            //   child: Icon(
-            //     item.transactionType.value=="debit".tr ? Icons.arrow_downward : Icons.arrow_upward,
-            //     color: item.transactionType.value=="debit".tr?Colors.red:Colors.green,
-            //     size: 28,
-            //   ),
-            // ),
-            // ),
-            const SizedBox(width: 16),
-
-            // --- النصوص ---
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // المبلغ + النوع
-                  Row(
-                    children: [
-                      Obx(()=> Text(
-                        item.amount.value.toStringAsFixed(2),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: item.transactionType.value=="debit".tr?Colors.red:Colors.green,
-                        ),
-                      ),
-                      ),
-                      const SizedBox(width: 8),
-                      Obx(()=> Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: (item.transactionType.value=="debit".tr?Colors.red:Colors.green).withAlpha(30),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          item.transactionType.value,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: item.transactionType.value=="debit".tr?Colors.red:Colors.green,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-
-                  // الوصف
-                  Obx(()=> Text(
-                    item.description.value,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black87,
-                      height: 1.4,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  ),
-
-                  // الرقم المرجعي
-                  Obx(()=> Text(
-                    item.sequence.value.toString(),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  ),
-
-                  // التاريخ
-                  Obx(()=> Text(
-                    global_methods.formatDateTime(item.createdAt.value),
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
-                  ),
-                  ),
-                ],
-              ),
+            child: Icon(
+              transaction.transactionType.value == 'credit'
+                  ? Icons.add_circle_outline
+                  : Icons.remove_circle_outline,
+              color: transaction.transactionType.value == 'credit'
+                  ? Colors.green
+                  : Colors.red,
+              size: 20,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.description.value.isNotEmpty
+                      ? transaction.description.value
+                      : 'transaction'.tr,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: MyColors.textPrimaryColor,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  transaction.createdAt.value,
+                  style: TextStyle(fontSize: 12, color: MyColors.neutral400),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '${transaction.transactionType.value == 'credit' ? '+' : '-'}${transaction.amount.value.toStringAsFixed(2)}',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: transaction.transactionType.value == 'credit'
+                  ? Colors.green
+                  : Colors.red,
+            ),
+          ),
+        ],
       ),
     );
   }

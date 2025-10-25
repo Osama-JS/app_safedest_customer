@@ -4,9 +4,10 @@ import '../Helpers/Users.dart';
 import '../shared_prff.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'MyColors.dart';
+import '../theme/app_theme.dart';
+import '../theme/app_decorations.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
-import 'global_methods.dart' as gm;
 
 // check internet
 Future<bool> isInternetAvailable() async {
@@ -14,8 +15,7 @@ Future<bool> isInternetAvailable() async {
     final result = await InternetAddress.lookup('www.google.com');
     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
       return true;
-    }
-    else {
+    } else {
       return false;
     }
   } on SocketException catch (e) {
@@ -24,136 +24,61 @@ Future<bool> isInternetAvailable() async {
 }
 
 // snackbars
-SnackBar errorSnackbar(String msg){
-  return SnackBar(
-      backgroundColor:MyColors.primaryColor,
-      content: Text(msg)
-  );
+SnackBar errorSnackbar(String msg) {
+  return SnackBar(backgroundColor: MyColors.primaryColor, content: Text(msg));
 }
 
-textAppBar() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 16 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textWhiteAppBar() => TextStyle(color: MyColors.whiteColor , fontSize: 16 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textTitle() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 16 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textSubTitle() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 14 , fontWeight: FontWeight.normal,fontFamily: "Tajawal");
-textCardTitle() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 14 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textCardSubTitle() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 12 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textHeader() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 28 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textBody() => TextStyle(color: MyColors.textSecondaryColor , fontSize: 16 , fontWeight: FontWeight.normal,fontFamily: "Tajawal");
-textPrimaryBody() => TextStyle(color: MyColors.primaryColor , fontSize: 16 , fontWeight: FontWeight.normal,fontFamily: "Tajawal");
-textPrimaryBodySaudiRiyal() => TextStyle(color: MyColors.primaryColor , fontSize: 16 , fontWeight: FontWeight.normal,fontFamily: "saudi_riyal");
-textBodySaudiRiyal() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 16 , fontWeight: FontWeight.normal,fontFamily: "saudi_riyal");
-textSubBody() => TextStyle(color: MyColors.textSecondaryColor , fontSize: 12 , fontWeight: FontWeight.normal,fontFamily: "Tajawal");
-textInput() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 16 , fontWeight: FontWeight.normal,fontFamily: "Tajawal");
-textInputHint() => TextStyle(color: MyColors.textSecondaryColor , fontSize: 16 , fontWeight: FontWeight.normal,fontFamily: "Tajawal");
-textPrimaryButton() => TextStyle(color: MyColors.primaryColor , fontSize: 16 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textButton() => TextStyle(color: MyColors.textPrimaryColor , fontSize: 16 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
-textOnPrimaryButton() => TextStyle(color: MyColors.whiteColor , fontSize: 16 , fontWeight: FontWeight.bold,fontFamily: "Tajawal");
+// ===== Text Styles - Updated to use AppTheme =====
+textAppBar() => AppTheme.titleLarge.copyWith(color: MyColors.textPrimaryColor);
+textWhiteAppBar() => AppTheme.titleLarge.copyWith(color: MyColors.whiteColor);
+textTitle() => AppTheme.titleLarge;
+textSubTitle() => AppTheme.titleMedium;
+textCardTitle() => AppTheme.titleMedium.copyWith(fontWeight: AppTheme.semiBold);
+textCardSubTitle() =>
+    AppTheme.titleSmall.copyWith(fontWeight: AppTheme.semiBold);
+textHeader() => AppTheme.displaySmall;
+textBody() => AppTheme.bodyLarge.copyWith(color: MyColors.textSecondaryColor);
+textPrimaryBody() => AppTheme.bodyLarge.copyWith(color: MyColors.primaryColor);
+textPrimaryBodySaudiRiyal() => AppTheme.currencyMedium;
+textBodySaudiRiyal() => AppTheme.currencySmall;
+textSubBody() => AppTheme.bodySmall;
+textInput() => AppTheme.bodyMedium;
+textInputHint() =>
+    AppTheme.bodyMedium.copyWith(color: MyColors.textSecondaryColor);
+textPrimaryButton() =>
+    AppTheme.buttonText.copyWith(color: MyColors.primaryColor);
+textButton() => AppTheme.labelLarge;
+textOnPrimaryButton() => AppTheme.buttonText;
 
-InputDecoration customInputDecoration(String? label,IconData? icon) {
-  return InputDecoration(
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide:  BorderSide(color: MyColors.inputBorderColor,),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(color: MyColors.primaryColor, width: 1),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(color: MyColors.inputBorderErrorColor, width: 1.5),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10.0),
-        borderSide: BorderSide(color: MyColors.inputBorderErrorColor, width: 2),
-      ),
-      labelStyle: gm.textInput(),
-      labelText: label,
-      prefixIcon: icon != null ? Icon(icon,color:MyColors.inputIconColor) : null
-  );
+InputDecoration customInputDecoration(String? label, IconData? icon) {
+  return AppDecorations.inputDecoration(labelText: label, prefixIcon: icon);
 }
 
-buttonStyle(){
-  return ElevatedButton.styleFrom(
-    fixedSize: const Size(150.0, 50.0),
-    textStyle: const TextStyle(
-      fontWeight: FontWeight.bold, fontSize: 16,
-    ),
-    backgroundColor: MyColors.primaryColor,
-    foregroundColor: MyColors.whiteColor,
-    elevation: 15,
-    // shadowColor: MyColors.dark_shadow,
-    alignment: Alignment.center,
-    shape: gm.buttonRadius(),
-  );
-}
+buttonStyle() => AppDecorations.primaryButtonStyle;
 
-buttonSecondaryStyle(){
-  return ElevatedButton.styleFrom(
-    fixedSize: const Size(150.0, 50.0),
-    textStyle: const TextStyle(
-      fontWeight: FontWeight.bold, fontSize: 16,
-    ),
-    backgroundColor: MyColors.primaryShadeColor,
-    foregroundColor: MyColors.primaryColor,
-    // elevation: 15,
-    // shadowColor: MyColors.dark_shadow,
-    alignment: Alignment.center,
-    shape: gm.buttonRadius(),
-  );
-}
+buttonSecondaryStyle() => AppDecorations.secondaryButtonStyle;
+buttonBackgroundStyle() => AppDecorations.outlinedButtonStyle;
+buttonOnBackgroundStyle() => AppDecorations.textButtonStyle;
 
-buttonBackgroundStyle(){
-  return ElevatedButton.styleFrom(
-    fixedSize: const Size(150.0, 50.0),
-    textStyle: const TextStyle(
-      fontWeight: FontWeight.bold, fontSize: 16,
-    ),
-    backgroundColor: MyColors.backgroundColor,
-    foregroundColor: MyColors.primaryColor,
-    // elevation: 15,
-    // shadowColor: MyColors.dark_shadow,
-    alignment: Alignment.center,
-    shape: gm.buttonRadius(),
-  );
-}
+buttonRadius() => RoundedRectangleBorder(
+  borderRadius: BorderRadius.circular(AppTheme.radiusLG),
+);
 
-buttonOnBackgroundStyle(){
-  return ElevatedButton.styleFrom(
-    fixedSize: const Size(150.0, 50.0),
-    textStyle: const TextStyle(
-      fontWeight: FontWeight.bold, fontSize: 16,
-    ),
-    backgroundColor: MyColors.onBackgroundColor,
-    foregroundColor: MyColors.primaryColor,
-    // elevation: 15,
-    // shadowColor: MyColors.dark_shadow,
-    alignment: Alignment.center,
-    shape: gm.buttonRadius(),
-  );
-}
-
-buttonRadius(){
-  return   RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(( Radius.circular(16)))
-  );
-}
-
-String getLanguage(){
-  String lang="ar-EG";
-  if(Selected_Language.getLanguage()=="en"){
-    lang="en-US";
+String getLanguage() {
+  String lang = "ar-EG";
+  if (Selected_Language.getLanguage() == "en") {
+    lang = "en-US";
   }
   return lang;
 }
 
-sendError(var error) async{
+sendError(var error) async {
   print("SAEEEEEEEED ERROR IS: $error");
   User_Helper user = User_Helper();
   // await user.sendError(error);
 }
 
-noInternet(){
+noInternet() {
   return Get.snackbar(
     "error".tr,
     "checkInternetConnection".tr,
@@ -169,16 +94,18 @@ double calculateRating(int totalStars, int totalUsers) {
     return 0.0;
   }
   double average = totalStars / totalUsers;
-  return double.parse(average.toStringAsFixed(1));}
+  return double.parse(average.toStringAsFixed(1));
+}
 
-String fixErrorMessage(String? message){
+String fixErrorMessage(String? message) {
   try {
     if (message == null) return "errorTryLater".tr;
 
     String m = message.toLowerCase();
 
     List<String> errorMessages = [
-      "This exception was thrown because the response has a status code of".toLowerCase(),
+      "This exception was thrown because the response has a status code of"
+          .toLowerCase(),
       "FormatException:".toLowerCase(),
       "NoSuchMethodError:".toLowerCase(),
       "is not a subtype of type".toLowerCase(),
@@ -190,43 +117,37 @@ String fixErrorMessage(String? message){
       }
     }
 
-    String startConnectionErrorMessage = "ClientException with SocketException:".toLowerCase();
-    if(m.contains(startConnectionErrorMessage)) {
+    String startConnectionErrorMessage = "ClientException with SocketException:"
+        .toLowerCase();
+    if (m.contains(startConnectionErrorMessage)) {
       return "check_internet_connection".tr;
     }
     // else{
     //   message = "errorTryLater".tr;
     // }
-  }catch(e){
+  } catch (e) {
     debugPrint("saeeed error change error message");
   }
   return message!;
 }
 
-
 BoxDecoration appDecoration() {
   return BoxDecoration(
-    border: Border.all(color: MyColors.borderColor.withAlpha(90),
-    ),
+    border: Border.all(color: MyColors.borderColor.withAlpha(90)),
     color: Colors.white,
     shape: BoxShape.rectangle,
     borderRadius: BorderRadius.circular(5),
-
-
   );
 }
 
-
 errorView(BuildContext context, String? message) {
   message = fixErrorMessage(message);
-  return  showDialog(
+  return showDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
       return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -239,11 +160,7 @@ errorView(BuildContext context, String? message) {
                   color: Colors.red.shade100,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.close,
-                  color: Colors.red,
-                  size: 32,
-                ),
+                child: const Icon(Icons.close, color: Colors.red, size: 32),
               ),
               const SizedBox(height: 16),
               Text(
@@ -256,10 +173,7 @@ errorView(BuildContext context, String? message) {
               const SizedBox(height: 8),
               Text(
                 message!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 24),
               Row(
@@ -282,28 +196,22 @@ errorView(BuildContext context, String? message) {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
       );
     },
   );
-
-
-
-
 }
 
 successView(BuildContext context, String? message) {
-  return   showDialog(
+  return showDialog(
     context: context,
     barrierDismissible: true,
     builder: (BuildContext context) {
       return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         backgroundColor: Colors.white,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
@@ -316,11 +224,7 @@ successView(BuildContext context, String? message) {
                   color: Colors.green.shade100,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.check,
-                  color: Colors.green,
-                  size: 32,
-                ),
+                child: const Icon(Icons.check, color: Colors.green, size: 32),
               ),
               const SizedBox(height: 16),
               Text(
@@ -333,10 +237,7 @@ successView(BuildContext context, String? message) {
               const SizedBox(height: 8),
               Text(
                 message!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
               ),
               const SizedBox(height: 24),
               Row(
@@ -359,55 +260,51 @@ successView(BuildContext context, String? message) {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
       );
     },
   );
-
-
-
-
 }
 
-BuildContext ? loadingDialogContext;
+BuildContext? loadingDialogContext;
 
 showDialogLoading({required BuildContext context}) {
   loadingDialogContext = context;
   showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.zero,
-          child: SizedBox.expand(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Center(
-                  child: loadAnime,
-                )
-              ],
-            ),
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: EdgeInsets.zero,
+        child: SizedBox.expand(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [Center(child: loadAnime)],
           ),
-        );
-      });
+        ),
+      );
+    },
+  );
 }
 
-hideLoadingDialog(){
+hideLoadingDialog() {
   Navigator.pop(loadingDialogContext!);
 }
 
 Widget loadAnime = SpinKitPouringHourGlass(
   duration: const Duration(seconds: 3),
-  size: 40,// 50.adaptSize,
+  size: 40, // 50.adaptSize,
   color: MyColors.primaryColor,
 );
 
-Future<void> showPermissionDeniedDialog(BuildContext context,String desk) async {
+Future<void> showPermissionDeniedDialog(
+  BuildContext context,
+  String desk,
+) async {
   return showDialog(
     context: context,
     builder: (context) => AlertDialog(
@@ -426,7 +323,6 @@ Future<void> showPermissionDeniedDialog(BuildContext context,String desk) async 
     ),
   );
 }
-
 
 String formatDate(String inputDate) {
   try {
@@ -527,7 +423,8 @@ String formatDateTime(String input) {
     int displayHour = hour % 12;
     if (displayHour == 0) displayHour = 12;
 
-    String formattedTime = '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period';
+    String formattedTime =
+        '${displayHour.toString().padLeft(2, '0')}:${minute.toString().padLeft(2, '0')} $period';
 
     return "$day $month $year، $formattedTime";
   } catch (e) {

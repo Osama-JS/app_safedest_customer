@@ -48,7 +48,9 @@ class PricingSummaryModel {
     final breakdownMap = <String, double>{};
 
     // إضافة العناصر التي تشكل Breakdown
-    breakdownMap['base_price'] = toDouble(json['base_price']); // تم إضافته ليتوافق مع العرض
+    breakdownMap['base_price'] = toDouble(
+      json['base_price'],
+    ); // تم إضافته ليتوافق مع العرض
     breakdownMap['distance_price'] = toDouble(json['distance_price']);
     breakdownMap['service_commission'] = toDouble(json['service_commission']);
     breakdownMap['vat'] = toDouble(json['vat_commission']);
@@ -74,7 +76,9 @@ class AddTaskController extends GetxController {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   // 🏆 بيانات التسعير المُستلمة من API الخطوة الثانية
-  final Rx<PricingSummaryModel?> pricingSummary = Rx<PricingSummaryModel?>(null);
+  final Rx<PricingSummaryModel?> pricingSummary = Rx<PricingSummaryModel?>(
+    null,
+  );
 
   // 🏆 متغيرات الإرسال النهائي (خيارات المزايدة)
   final RxBool included = true.obs; // القيمة الافتراضية
@@ -82,7 +86,6 @@ class AddTaskController extends GetxController {
   final RxDouble minPrice = 0.0.obs;
   final RxString notePrice = ''.obs;
   final RxBool showPriceOption = false.obs;
-
 
   // 💡 حقول الصور (يجب تعيين قيم Base64 لها في الخطوة الأولى)
   final RxString pickupImageBase64 = "MOCK_PICKUP_IMAGE_BASE64_VALUE".obs;
@@ -92,7 +95,6 @@ class AddTaskController extends GetxController {
   void setTaskModelForEdit(TaskModel taskModel) {
     isEditMode.value = true;
     taskIdForEdit.value = taskModel.id.value;
-
 
     // 2. استخراج وتهيئة بيانات الأسعار من حقل 'ad'
     final adDetails = taskModel.ad.value;
@@ -111,7 +113,8 @@ class AddTaskController extends GetxController {
       // تهيئة showPriceOption
       // نفترض أن الخيار يجب أن يظهر إذا كانت أي من القيم (min/max) أكبر من الصفر
       // أو إذا كان هناك وصف (notePrice)
-      showPriceOption.value = adDetails.max > 0.0 ||
+      showPriceOption.value =
+          adDetails.max > 0.0 ||
           adDetails.min > 0.0 ||
           adDetails.description.isNotEmpty;
     } else {
@@ -121,9 +124,7 @@ class AddTaskController extends GetxController {
       notePrice.value = '';
       showPriceOption.value = false;
     }
-
   }
-
 
   // 💡 تهيئة ملخص التسعير وتعيين القيم الأولية للمزايدة
   void setPricingSummary(http.Response response) {
@@ -134,17 +135,24 @@ class AddTaskController extends GetxController {
       if (dataJson != null) {
         pricingSummary.value = PricingSummaryModel.fromJson(dataJson);
       } else {
-        Get.snackbar("تحذير", "بيانات التسعير المستلمة فارغة.", backgroundColor: Colors.orange);
+        Get.snackbar(
+          "warning".tr,
+          "pricing_data_empty".tr,
+          backgroundColor: Colors.orange,
+        );
       }
     } catch (e) {
-      Get.snackbar("خطأ تحميل", "فشل تحميل ملخص التسعير: $e", backgroundColor: Colors.red);
+      Get.snackbar(
+        "loading_error".tr,
+        "${'failed_to_load_pricing'.tr}: $e",
+        backgroundColor: Colors.red,
+      );
       print("Error loading pricing summary: $e");
     }
   }
 
   // 🏆 دالة تجميع الحمولة النهائية للإرسال
   Map<String, dynamic> generateFinalPayload() {
-
     // 💡 قراءة الحمولة من المتغيرات العامة (نفترض أنها خرائط جاهزة)
     final stepOne = globals.stepOnePayload as Map<String, dynamic>? ?? {};
     final stepTwo = globals.stepTowPayload as Map<String, dynamic>? ?? {};
@@ -175,9 +183,7 @@ class AddTaskController extends GetxController {
     return finalPayload;
   }
 
-
   Future<void> sendFinalTask(BuildContext context, String token) async {
-
     // 💡 يتم جلب الحمولة الأولية (Step 1) لتحميل ملفات Multipart
     Map<String, dynamic> payload = globals.stepOnePayload;
     Map<String, dynamic> payload2 = globals.stepTowPayload;
@@ -245,15 +251,16 @@ class AddTaskController extends GetxController {
     }
 
     for (var key in payload2.keys) {
-      if(key.contains("email")){
-        if(payload2[key].toString()!="null"&&payload2[key].toString()!=""){
+      if (key.contains("email")) {
+        if (payload2[key].toString() != "null" &&
+            payload2[key].toString() != "") {
           request.fields[key] = payload2[key].toString();
         }
-      }else {
+      } else {
         request.fields[key] = payload2[key].toString();
       }
     }
-    if(isEditMode.value){
+    if (isEditMode.value) {
       request.fields['id'] = taskIdForEdit.value.toString();
     }
 
@@ -265,24 +272,34 @@ class AddTaskController extends GetxController {
       global_methods.hideLoadingDialog();
 
       if (data["status"] == 200) {
-        Get.snackbar("نجاح", "تم ${isEditMode.value ? 'تعديل' : 'إضافة'} المهمة بنجاح",
-            snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
+        Get.snackbar(
+          "success_title".tr,
+          isEditMode.value
+              ? "task_updated_successfully".tr
+              : "task_added_successfully".tr,
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green,
+        );
 
         // العودة إلى لوحة التحكم
         Get.offAll(() => Dashboard());
-
       } else {
-
-        Get.snackbar("خطأ في API", "فشل الإرسال. الاستجابة: ${data["message"] ?? 'Unknown error'}",
-            snackPosition: SnackPosition.BOTTOM,
-            backgroundColor: Colors.red.shade600,
-            colorText: Colors.white);
-      }
-    } catch (e) {
-      Get.snackbar("خطأ الإرسال", "حدث خطأ أثناء الاتصال بالخادم: $e",
+        Get.snackbar(
+          "api_error".tr,
+          "${'send_failed'.tr}. ${'response'.tr}: ${data["message"] ?? 'Unknown error'}",
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade600,
-          colorText: Colors.white);
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.snackbar(
+        "send_error".tr,
+        "${'server_connection_error'.tr}: $e",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.shade600,
+        colorText: Colors.white,
+      );
       global_methods.hideLoadingDialog();
     }
   }
@@ -317,7 +334,11 @@ class AddTaskPage extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(controller.isEditMode.value ? "الخطوة 3: تعديل ومراجعة" : "الخطوة 3: المراجعة النهائية"),
+        title: Text(
+          controller.isEditMode.value
+              ? "step_3_edit_review".tr
+              : "step_3_final_review".tr,
+        ),
         backgroundColor: MyColors.appBarColor,
       ),
       body: Obx(() {
@@ -341,7 +362,7 @@ class AddTaskPage extends StatelessWidget {
                 //       controller.showPriceOption.value = value ?? false;
                 //     },
                 //   )),
-                //   title: Text("إضافة تسعيرة مناقصة (Bidding)".tr),
+                //   title: Text("add_bidding_price".tr),
                 // ),
                 const SizedBox(height: 10),
 
@@ -350,7 +371,6 @@ class AddTaskPage extends StatelessWidget {
                     key: controller.formKey, // ربط المفتاح بالنموذج
                     child: _buildAdvertisedOptions(),
                   ),
-
               ] else ...[
                 const Center(child: CircularProgressIndicator()),
               ],
@@ -359,26 +379,32 @@ class AddTaskPage extends StatelessWidget {
 
               // 🏆 زر الإرسال النهائي
               ElevatedButton(
-                onPressed: summary != null ? () async {
+                onPressed: summary != null
+                    ? () async {
+                        bool isValid = true;
+                        if (priceMethodId == 0) {
+                          isValid = controller.formKey.currentState!.validate();
+                        }
 
-                  bool isValid = true;
-                  if (priceMethodId == 0) {
-                    isValid = controller.formKey.currentState!.validate();
-                  }
+                        if (isValid) {
+                          await controller.sendFinalTask(
+                            context,
+                            Token_pref.getToken()!,
+                          );
+                        }
 
-                  if (isValid) {
-                    await controller.sendFinalTask(context, Token_pref.getToken()!);
-                  }
-
-                  // await controller.sendFinalTask(context, Token_pref.getToken()!);
-                } : null,
+                        // await controller.sendFinalTask(context, Token_pref.getToken()!);
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.primaryColor,
                   // minimumSize: const Size(double.infinity, 50),
                 ),
                 child: Text(
-                    controller.isEditMode.value ? "حفظ التعديلات" : "إرسال المهمة النهائية",
-                    style: const TextStyle(color: Colors.white, fontSize: 18)
+                  controller.isEditMode.value
+                      ? "save_changes".tr
+                      : "send_final_task".tr,
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ),
             ],
@@ -398,20 +424,36 @@ class AddTaskPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("ملخص التسعير", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: MyColors.primaryColor)),
+            Text(
+              "pricing_summary".tr,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: MyColors.primaryColor,
+              ),
+            ),
             const Divider(height: 20),
-            _buildDetailRow("طريقة التسعير", summary.pricingMethod),
-            _buildDetailRow("المسافة المقدرة", "${summary.distance.toStringAsFixed(2)} كم"),
+            _buildDetailRow("pricing_method".tr, summary.pricingMethod),
+            _buildDetailRow(
+              "estimated_distance".tr,
+              "${summary.distance.toStringAsFixed(2)} ${'km'.tr}",
+            ),
 
             // عرض تفاصيل الـ Breakdown
-            ...summary.breakdown.entries.map((e) => _buildDetailRow(
+            ...summary.breakdown.entries.map(
+              (e) => _buildDetailRow(
                 _formatBreakdownKey(e.key),
-                "${e.value.toStringAsFixed(2)} ريال",
-                isTotal: e.key == 'base_price'
-            )),
+                "${e.value.toStringAsFixed(2)} ${'riyal'.tr}",
+                isTotal: e.key == 'base_price',
+              ),
+            ),
 
             const Divider(height: 20),
-            _buildDetailRow("الإجمالي المتوقع", "${summary.totalPrice.toStringAsFixed(2)} ريال", isTotal: true),
+            _buildDetailRow(
+              "expected_total".tr,
+              "${summary.totalPrice.toStringAsFixed(2)} ${'riyal'.tr}",
+              isTotal: true,
+            ),
           ],
         ),
       ),
@@ -420,12 +462,17 @@ class AddTaskPage extends StatelessWidget {
 
   // دالة مساعدة لتنسيق مفاتيح Breakdown
   String _formatBreakdownKey(String key) {
-    switch(key) {
-      case 'base_price': return 'السعر الأساسي';
-      case 'distance_price': return 'سعر المسافة';
-      case 'service_commission': return 'رسوم الخدمة';
-      case 'vat': return 'ضريبة القيمة المضافة';
-      default: return key.replaceAll('_', ' ').capitalizeFirst ?? key;
+    switch (key) {
+      case 'base_price':
+        return 'base_price'.tr;
+      case 'distance_price':
+        return 'distance_price'.tr;
+      case 'service_commission':
+        return 'service_commission'.tr;
+      case 'vat':
+        return 'vat'.tr;
+      default:
+        return key.replaceAll('_', ' ').capitalizeFirst ?? key;
     }
   }
 
@@ -462,12 +509,15 @@ class AddTaskPage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("خيارات المزايدة", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(
+          "bidding_options".tr,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
         const Divider(),
 
         // حقل الحد الأقصى للسعر
         _buildPriceField(
-          label: "الحد الأقصى للسعر",
+          label: "max_price".tr,
           currentValue: controller.maxPrice,
           onChanged: (val) {
             controller.maxPrice.value = double.tryParse(val) ?? 0.0;
@@ -476,7 +526,7 @@ class AddTaskPage extends StatelessWidget {
 
         // حقل الحد الأدنى للسعر
         _buildPriceField(
-          label: "الحد الأدنى للسعر",
+          label: "min_price".tr,
           currentValue: controller.minPrice,
           onChanged: (val) {
             controller.minPrice.value = double.tryParse(val) ?? 0.0;
@@ -485,48 +535,60 @@ class AddTaskPage extends StatelessWidget {
 
         // ملاحظات السعر
         _buildTextField(
-            label: "ملاحظات حول التسعير (اختياري)",
-            isRequired: false,
-            maxLines: 2,
-            initialValue: controller.notePrice.value,
-            onChanged: (val) => controller.notePrice.value = val
+          label: "pricing_notes".tr,
+          isRequired: false,
+          maxLines: 2,
+          initialValue: controller.notePrice.value,
+          onChanged: (val) => controller.notePrice.value = val,
         ),
       ],
     );
   }
 
-// في كلاس AddTaskPage
+  // في كلاس AddTaskPage
 
-// دالة مساعدة لحقول إدخال السعر
+  // دالة مساعدة لحقول إدخال السعر
   Widget _buildPriceField({
     required String label,
     required RxDouble currentValue,
-    required ValueChanged<String> onChanged
+    required ValueChanged<String> onChanged,
   }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Obx(() => TextFormField(
-        initialValue: currentValue.value == 0.0 ? '' : currentValue.toStringAsFixed(2),
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          labelText: label,
-          suffixText: 'ريال',
-          border: const OutlineInputBorder(),
+      child: Obx(
+        () => TextFormField(
+          initialValue: currentValue.value == 0.0
+              ? ''
+              : currentValue.toStringAsFixed(2),
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            labelText: label,
+            suffixText: 'riyal'.tr,
+            border: const OutlineInputBorder(),
+          ),
+          onChanged: onChanged,
+          // 🏆 منطق التحقق: يجب أن تكون القيمة موجبة
+          validator: (val) {
+            final double? price = double.tryParse(val ?? '');
+            if (price == null || price <= 0) {
+              return "enter_valid_positive_price".trParams({'field': label});
+            }
+            return null;
+          },
         ),
-        onChanged: onChanged,
-        // 🏆 منطق التحقق: يجب أن تكون القيمة موجبة
-        validator: (val) {
-          final double? price = double.tryParse(val ?? '');
-          if (price == null || price <= 0) {
-            return 'يرجى إدخال سعر صحيح وموجب لـ ${label}';
-          }
-          return null;
-        },
-      )),
+      ),
     );
   }
+
   // دالة مساعدة لحقول النص العادية
-  Widget _buildTextField({required String label, TextInputType keyboardType = TextInputType.text, required ValueChanged<String> onChanged, bool isRequired = true, int maxLines = 1, String? initialValue}) {
+  Widget _buildTextField({
+    required String label,
+    TextInputType keyboardType = TextInputType.text,
+    required ValueChanged<String> onChanged,
+    bool isRequired = true,
+    int maxLines = 1,
+    String? initialValue,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
@@ -538,7 +600,9 @@ class AddTaskPage extends StatelessWidget {
           border: const OutlineInputBorder(),
         ),
         onChanged: onChanged,
-        validator: (val) => (isRequired && (val == null || val.isEmpty)) ? "${label} مطلوب" : null,
+        validator: (val) => (isRequired && (val == null || val.isEmpty))
+            ? "field_required".trParams({'field': label})
+            : null,
       ),
     );
   }

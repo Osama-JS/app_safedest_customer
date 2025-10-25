@@ -1,238 +1,419 @@
 import 'dart:io';
-import '../../Dashboard.dart';
-import '../../Globals/style.dart';
-import '../../Globals/MyColors.dart';
-import '../../Helpers/Users.dart';
-import '../../shared_prff.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../Globals/global_methods.dart' as gm;
 import 'package:get/get.dart';
-import 'ForgetPassword.dart';
-import 'OTPScreen.dart';
-import 'Register.dart';
+
+import '../../Dashboard.dart';
+import '../../Globals/MyColors.dart';
+import '../../theme/app_theme.dart';
+import '../../Views/Widgets/CustomTextField.dart';
+import '../../Views/Widgets/CustomButton.dart';
+import '../../Helpers/Users.dart';
+import '../../shared_prff.dart';
+import '../../Globals/global_methods.dart' as gm;
 import '../../Globals/global.dart' as globals;
+import 'ForgetPassword.dart';
+import 'SimpleRegister.dart';
 
 class Login extends StatefulWidget {
   final bool canPop;
 
-  const Login({Key? key, this.canPop = false}) : super(key: key);
+  const Login({super.key, this.canPop = false});
 
   @override
   State<Login> createState() => _LoginState();
 }
 
 class _LoginState extends State<Login> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
-  @override
-  void initState() {
-   super.initState();
-  }
+  bool _obscurePassword = true;
+  bool _rememberMe = false;
+  bool _isLoading = false;
+  DateTime? _lastBackPressed;
+
+  User_Helper user = User_Helper();
 
   @override
   void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  RxBool secureText = true.obs;
+  Future<void> _handleLogin() async {
+    if (!_formKey.currentState!.validate()) return;
 
-  User_Helper user =  User_Helper();
+    // Prevent multiple login attempts
+    if (_isLoading) return;
 
-  late String email ;
-  late String password ;
-  GlobalKey<FormState> formState =  GlobalKey<FormState>();
+    setState(() {
+      _isLoading = true;
+    });
 
-  void startLogin() async {
-    var form = formState.currentState;
-    if (form!.validate()) {
-      form.save();
+    try {
       if (!await gm.isInternetAvailable()) {
-        gm.errorView(
-            context, 'checkInternetConnection'.tr);
-      } else {
-        gm.showDialogLoading(context: context);
-
-
-
-        try {
-          var Data = await user.login(email,password,globals.notificationToken);
-          gm.hideLoadingDialog();
-
-          if (Data["status"] == 200) {
-            // Data["data"];
-
-            Token_pref.setToken(Data["data"]["token"].toString());
-
-            globals.user=await Data;
-
-            Get.offAll(()=>Dashboard());
-
-          }else{
-            Get.snackbar("error".tr, Data["message"] );
-
-          }
-        }catch (e) {
-          gm.hideLoadingDialog();
-          gm.sendError("Login : $e");
-
-          Get.snackbar("error".tr, "somethingWentWrong".tr);
-
-          // Get.snackbar("error".tr, e.toString() );
-
+        if (mounted) {
+          gm.errorView(context, 'checkInternetConnection'.tr);
         }
-
-        }
-        }
+        return;
       }
 
+      var data = await user.login(
+        _emailController.text.trim(),
+        _passwordController.text,
+        globals.notificationToken, // notification token
+      );
 
-  DateTime? _lastBackPressed;
+      if (mounted) {
+        if (data['status'] == 200) {
+          // Save user data and token based on API response structure
+          await User_pref.setUser(data['data']['customer'].toString());
+          await Token_pref.setToken(data['data']['token']);
+
+          // Set globals.user to match the expected structure
+          globals.user = data;
+
+          // Navigate to dashboard
+          Get.offAll(() => Dashboard());
+        } else {
+          _showErrorDialog(data['message'] ?? 'loginFailed'.tr);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorDialog('unexpectedErrorOccurred'.tr);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('loginErrorTitle'.tr),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('ok'.tr),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    // SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,overlays: [SystemUiOverlay.bottom,SystemUiOverlay.top]);
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.manual,
+      overlays: [SystemUiOverlay.bottom, SystemUiOverlay.top],
+    );
 
     return PopScope(
       canPop: widget.canPop,
-      onPopInvokedWithResult: (bool didPop, dynamic result) async{
-        if(!didPop) {
-          globals.fromLoginPassword=false;
+      onPopInvokedWithResult: (bool didPop, dynamic result) async {
+        if (!didPop) {
+          globals.fromLoginPassword = false;
 
-          if(widget.canPop){
+          if (widget.canPop) {
             Get.back();
-          }else{
+          } else {
             DateTime now = DateTime.now();
             if (_lastBackPressed == null ||
-                now.difference(_lastBackPressed!) > const Duration(seconds: 2)) {
+                now.difference(_lastBackPressed!) >
+                    const Duration(seconds: 2)) {
               _lastBackPressed = now;
-              Get.snackbar('warning'.tr, 'press_again_to_exit'.tr);
+              Get.snackbar('warning'.tr, 'pressAgainToExit'.tr);
             } else {
               if (Platform.isAndroid) {
-                await SystemChannels.platform.invokeMethod('SystemNavigator.pop');
+                await SystemChannels.platform.invokeMethod(
+                  'SystemNavigator.pop',
+                );
               } else if (Platform.isIOS) {
                 exit(0);
               }
             }
           }
-
-
         }
-        },
-        child: Scaffold(
-          resizeToAvoidBottomInset: true,
-          backgroundColor: MyColors.backgroundColor,
-          body: Column(
-            children: [
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/images/logo.png'),
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ),
+      },
+      child: Scaffold(
+        backgroundColor: MyColors.backgroundColor,
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppTheme.spacing6),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+
+                  // Header with Logo and Title
+                  _buildHeader(),
+
+                  const SizedBox(height: 60),
+
+                  // Login Form
+                  _buildLoginForm(),
+
+                  const SizedBox(height: 32),
+
+                  // Login Button
+                  _buildLoginButton(),
+
+                  const SizedBox(height: 20),
+
+                  // Remember Me and Forgot Password
+                  _buildRememberMe(),
+
+                  const SizedBox(height: 40),
+
+                  // Footer
+                  _buildFooter(),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Form(
-                  key: formState,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(height: 20,),
-
-                      TextButton(
-                          onPressed: () {
-                            Get.to(Register());
-                          },
-                          child: Text('welcome_back_create'.tr, style: TextStyle(color: MyColors.primaryColor, fontSize: 16 , fontWeight: FontWeight.bold)
-                          )
-                      ),
-                      TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        textDirection : TextDirection.ltr,
-                        textAlign : TextAlign.left,
-                        style: gm.textInput(),
-                        decoration: gm.customInputDecoration('email'.tr,Icons.email_outlined),
-                        validator: (text) {
-                          if (text!.trim().isEmpty) {
-                            return "${'email'.tr} ${'is_required'.tr}";
-                          }
-                          // else if(!text.trim().contains("@gmail.com")){
-                          //   return "InvalidEmail".tr;
-                          // }
-
-                          return null;
-                        },
-                        onSaved: (text) {
-                          email = text.toString();
-                        },
-                      ),
-                      SizedBox(height: 8,),
-                      Obx(()=> TextFormField(
-                          style: gm.textInput(),
-                          keyboardType: TextInputType.text,
-
-                          obscureText: secureText.value,
-                          decoration: gm.customInputDecoration('password'.tr,Icons.lock).copyWith(
-                            suffixIcon: IconButton(
-                              icon: Icon(secureText.value ? Icons.remove_red_eye : Icons.visibility_off,color:MyColors.inputIconColor ),
-                              onPressed: () {
-                                  secureText.value = !secureText.value;
-
-                              },
-                            ),
-                          ),
-                          validator: (text) {
-                            if (text!.trim().isEmpty) {
-                              return "${'password'.tr} ${'isRequired'.tr}";
-                            }
-
-                            return null;
-                          },
-                          onSaved: (text) {
-                            password = text.toString();
-                          },
-
-
-
-                        ),
-                      ),
-                      Container(
-                        alignment: Alignment.topLeft,
-                        child: TextButton(
-                          onPressed: () {
-                            Get.to(ForgetPassword());
-                            // email_action();
-                          },
-                          child: Text('forgot_password'.tr,
-                              style: TextStyle(color: MyColors.primaryColor, fontSize: 15 , fontWeight: FontWeight.bold)
-                          ),
-                        ),
-                      ),
-
-                      SizedBox(height: 8,),
-                      SizedBox(
-                        width: double.maxFinite,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            startLogin();
-                          },
-                          style: gm.buttonStyle(),
-                          child: Text('login'.tr,style: gm.textOnPrimaryButton(),),
-                        ),
-                      ),
-
-                      SizedBox(height: 40,),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
-      );
-    }
- }
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      children: [
+        // App Logo
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: MyColors.whiteColor,
+            borderRadius: BorderRadius.circular(AppTheme.radius2XL),
+            boxShadow: AppTheme.shadowLG,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppTheme.radius2XL),
+            child: Image.asset(
+              'assets/images/logo.png',
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.local_shipping,
+                  size: 50,
+                  color: MyColors.primaryColor,
+                );
+              },
+            ),
+          ),
+        ),
+
+        const SizedBox(height: AppTheme.spacing5),
+
+        // App Name
+        Text(
+          'SafeDest Customer',
+          style: AppTheme.headlineLarge.copyWith(
+            fontWeight: AppTheme.bold,
+            color: MyColors.primaryColor,
+          ),
+        ),
+
+        const SizedBox(height: AppTheme.spacing2),
+
+        // Subtitle
+        Text(
+          'welcomeToCustomerApp'.tr,
+          style: AppTheme.bodyLarge.copyWith(
+            color: MyColors.textSecondaryColor,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Column(
+      children: [
+        // Email Field
+        CustomTextField(
+          controller: _emailController,
+          label: 'emailOrUsernameLabel'.tr,
+          hint: 'enterEmailOrUsernameHint'.tr,
+          keyboardType: TextInputType.emailAddress,
+          prefixIcon: Icons.email_outlined,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'pleaseEnterEmailError'.tr;
+            }
+            return null;
+          },
+        ),
+
+        const SizedBox(height: AppTheme.spacing5),
+
+        // Password Field
+        CustomTextField(
+          controller: _passwordController,
+          label: 'passwordFieldLabel'.tr,
+          hint: 'enterPasswordHint'.tr,
+          obscureText: _obscurePassword,
+          prefixIcon: Icons.lock_outlined,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+              color: MyColors.textSecondaryColor,
+            ),
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'pleaseEnterPasswordError'.tr;
+            }
+            if (value.length < 6) {
+              return 'passwordMinLengthError'.tr;
+            }
+            return null;
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginButton() {
+    return CustomButton(
+      text: 'loginButtonText'.tr,
+      onPressed: _isLoading ? null : _handleLogin,
+      isLoading: _isLoading,
+      icon: Icons.login,
+    );
+  }
+
+  Widget _buildRememberMe() {
+    return Row(
+      children: [
+        Checkbox(
+          value: _rememberMe,
+          onChanged: (value) {
+            setState(() {
+              _rememberMe = value ?? false;
+            });
+          },
+          activeColor: MyColors.primaryColor,
+        ),
+        Text('rememberMeText'.tr, style: AppTheme.bodyMedium),
+        const Spacer(),
+        TextButton(
+          onPressed: () {
+            Get.to(() => const ForgetPassword());
+          },
+          child: Text(
+            'forgotPasswordText'.tr,
+            style: AppTheme.bodyMedium.copyWith(
+              color: MyColors.primaryColor,
+              fontWeight: AppTheme.semiBold,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFooter() {
+    return Column(
+      children: [
+        const SizedBox(height: AppTheme.spacing4),
+
+        // Register link
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'dontHaveAccountText'.tr,
+              style: AppTheme.bodyMedium.copyWith(
+                color: MyColors.textSecondaryColor,
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Get.to(() => const SimpleRegister());
+              },
+              child: Text(
+                'createNewAccountText'.tr,
+                style: AppTheme.bodyMedium.copyWith(
+                  color: MyColors.primaryColor,
+                  fontWeight: AppTheme.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: AppTheme.spacing4),
+
+        Text(
+          'byLoggingInYouAgreeText'.tr,
+          style: AppTheme.bodySmall.copyWith(color: MyColors.neutral400),
+          textAlign: TextAlign.center,
+        ),
+
+        const SizedBox(height: 4),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton(
+              onPressed: () {
+                // TODO: Show terms of service
+              },
+              child: Text(
+                'termsOfServiceText'.tr,
+                style: AppTheme.bodySmall.copyWith(
+                  color: MyColors.primaryColor,
+                ),
+              ),
+            ),
+            Text(
+              'andText'.tr,
+              style: AppTheme.bodySmall.copyWith(color: MyColors.neutral400),
+            ),
+            TextButton(
+              onPressed: () {
+                // TODO: Show privacy policy
+              },
+              child: Text(
+                'privacyPolicyText'.tr,
+                style: AppTheme.bodySmall.copyWith(
+                  color: MyColors.primaryColor,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 20),
+
+        Text(
+          'versionNumber'.tr + ' 1.0.0',
+          style: AppTheme.bodySmall.copyWith(color: MyColors.neutral400),
+        ),
+      ],
+    );
+  }
+}

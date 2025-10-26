@@ -31,7 +31,7 @@ class WalletHelper{
 
     return data;
   }
-  getTransactionData(int page,String sortBy,String search,  var token)async{
+  getTransactionData(int page,String sortBy,String filter,int withImageOnly,String search,  var token)async{
 
     var  url = Uri.parse("${globals.public_uri}wallet/transactions");
 
@@ -40,6 +40,10 @@ class WalletHelper{
       "per_page":10,
       "sort_by":sortBy,
       "search":search,
+      if(withImageOnly!=0)
+        "image":withImageOnly,
+      if(filter!='all')
+      "transaction_type":filter,
 
     });
 
@@ -56,6 +60,7 @@ class WalletHelper{
           return http.Response('Errorr', 408);
         }
     );
+    print("saeeeeeeeeeeedddddddd body: ${body}");
     print("saeeeeeeeeeeedddddddd data: ${response.body}");
     print("saeeeeeeeeeeedddddddd data: ${response.statusCode}");
 

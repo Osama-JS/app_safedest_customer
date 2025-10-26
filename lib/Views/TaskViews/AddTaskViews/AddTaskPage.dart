@@ -87,9 +87,6 @@ class AddTaskController extends GetxController {
   final RxString notePrice = ''.obs;
   final RxBool showPriceOption = false.obs;
 
-  // 💡 حقول الصور (يجب تعيين قيم Base64 لها في الخطوة الأولى)
-  final RxString pickupImageBase64 = "MOCK_PICKUP_IMAGE_BASE64_VALUE".obs;
-  final RxString deliveryImageBase64 = "MOCK_DELIVERY_IMAGE_BASE64_VALUE".obs;
 
   // 💡 دالة لتهيئة وضع التعديل وتحميل بيانات المزايدة إذا كانت متاحة
   void setTaskModelForEdit(TaskModel taskModel) {
@@ -256,7 +253,31 @@ class AddTaskController extends GetxController {
             payload2[key].toString() != "") {
           request.fields[key] = payload2[key].toString();
         }
-      } else {
+      }
+
+
+      else if(key.contains("image")){
+
+
+        String imageValue = payload2[key].toString();
+
+        if (imageValue.isNotEmpty && !imageValue.startsWith('http')) {
+          File file = File(imageValue);
+          if (await file.exists()) {
+            var multipartFile = await http.MultipartFile.fromPath(
+              key,
+              imageValue,
+              filename: basename(imageValue),
+            );
+            request.files.add(multipartFile);
+          }
+        }
+
+
+      }
+
+
+      else {
         request.fields[key] = payload2[key].toString();
       }
     }

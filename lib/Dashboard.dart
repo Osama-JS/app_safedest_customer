@@ -99,7 +99,7 @@ class _Dashboard extends State<Dashboard> with WidgetsBindingObserver {
         child: Scaffold(
           body: pages[pageIndex],
           bottomNavigationBar: Container(
-            height: 65,
+            height: 70,
             decoration: AppDecorations.navigationBarDecoration,
             child: SafeArea(
               child: Padding(

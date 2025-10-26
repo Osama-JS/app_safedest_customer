@@ -29,6 +29,9 @@ class TransactionController extends GetxController {
   RxString selectedSortOption="created_at".obs;
   RxString search="".obs;
 
+  RxString selectedFilterOption="all".obs;
+  RxInt withImageOnly = 0.obs;
+
 
   RxBool isThereError = false.obs;
   RxString errorMessage = "".obs;
@@ -38,8 +41,7 @@ class TransactionController extends GetxController {
     try {
       // isLoadingData.value = true;
 
-      var data = await helperData.getTransactionData(currentPage.value,selectedSortOption.value,search.value,Token_pref.getToken()!);
-
+      var data = await helperData.getTransactionData(currentPage.value,selectedSortOption.value,selectedFilterOption.value,withImageOnly.value,search.value,Token_pref.getToken()!);
 
 
       isLoadingData.value = false;
@@ -47,7 +49,7 @@ class TransactionController extends GetxController {
       if(data["status"]==200) {
 
         final List<dynamic> dataListJson = data["data"]["transactions"];
-        lastItem.value = data["data"]["pagination"]["to"];
+        lastItem.value = data["data"]["pagination"]["to"]??0;
 
         if (isFirstTime.value) {
 

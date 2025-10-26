@@ -125,11 +125,16 @@ class ValidationOneController extends GetxController {
 
   final RxList<VehicleData> allVehicles = <VehicleData>[].obs;
   final RxList<DynamicFieldModel> additionalFields = <DynamicFieldModel>[].obs;
-  Map<String, dynamic>? rawTaskTemplateData; // تم تغيير الاسم
+  Map<String, dynamic>? rawTaskTemplates;
+  final List<String> templateKeys = ['task_template', 'task_from_template', 'task_to_template'];
+  // final List<String> templateKeys = ['task_template'];
+  final RxInt selectedTemplateIndex = (-1).obs;
+  final RxList<String> availableTemplatesKeys = <String>[].obs;
 
   // 💡 تم تبسيط متغيرات القالب
   final RxInt selectedTemplateId = (-1).obs;
   final RxString selectedTemplateName = ''.obs;
+  final Map<String, String> templateTitlesMap = {};
 
   final Rx<SelectedVehicleModel?> singleSelectedVehicle = Rx<SelectedVehicleModel?>(null);
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
@@ -152,14 +157,47 @@ class ValidationOneController extends GetxController {
 
         allVehicles.clear();
         allVehicles.value = vehiclesJson.map((item) => VehicleData.fromJson(item)).toList();
+print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_template :${dataBody['task_template']} ");
+print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_from_template :${dataBody['task_from_template']} ");
+print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_template']} ");
+        rawTaskTemplates = {
+          'task_template': dataBody['task_template'],
+          'task_from_template': dataBody['task_from_template'],
+          'task_to_template': dataBody['task_to_template'],
+        };
 
-        // 💡 الاحتفاظ ببيانات القالب الوحيد مباشرة
-        rawTaskTemplateData = dataBody['task_template'];
+        if(rawTaskTemplates!["task_template"]!=null){
+          rawTaskTemplates!["task_template"]['template']['name']="مهمه عاديه";
+        }
+        if(rawTaskTemplates!["task_from_template"]!=null){
+          rawTaskTemplates!["task_from_template"]['template']['name']="مهمة من مينا";
+        }
+        if(rawTaskTemplates!["task_to_template"]!=null){
+          rawTaskTemplates!["task_to_template"]['template']['name']="مهمة الى ميناء";
+        }
+
+        availableTemplatesKeys.clear();
+        templateTitlesMap.clear();
+        for (var key in templateKeys) {
+          final templateData = rawTaskTemplates![key];
+          if (templateData != null && templateData['template'] != null) {
+            availableTemplatesKeys.add(key);
+            templateTitlesMap[key] = templateData['template']['name'] ?? key;
+          }
+        }
+
 
         if (isEditMode.value && taskModelForEdit.value != null) {
           _initializeForEdit(taskModelForEdit.value!);
         } else {
-          _initializeTemplateAndVehicleForNewTask();
+          if (availableTemplatesKeys.isNotEmpty) {
+            changeTemplate(availableTemplatesKeys.first);
+          } else {
+            additionalFields.clear();
+            selectedTemplateId.value = -1;
+            selectedTemplateName.value = '';
+          }
+          _initSingleVehicle();
         }
       }
     } catch (e) {
@@ -169,20 +207,6 @@ class ValidationOneController extends GetxController {
     }
   }
 
-  // 💡 دالة تهيئة مهمة جديدة مبسطة
-  void _initializeTemplateAndVehicleForNewTask() {
-    if (rawTaskTemplateData != null) {
-      final templateInfo = rawTaskTemplateData!['template'];
-      selectedTemplateId.value = templateInfo['id'] ?? -1;
-      selectedTemplateName.value = templateInfo['name'] ?? '';
-      _updateAdditionalFields(initialData: null);
-    } else {
-      additionalFields.clear();
-      selectedTemplateId.value = -1;
-      selectedTemplateName.value = '';
-    }
-    _initSingleVehicle();
-  }
 
   // ... (دالة _initSingleVehicle تبقى كما هي)
   void _initSingleVehicle() {
@@ -240,21 +264,41 @@ class ValidationOneController extends GetxController {
       _initSingleVehicle();
     }
 
-    // تهيئة القالب الوحيد وبياناته الإضافية
-    if (rawTaskTemplateData != null) {
-      final templateInfo = rawTaskTemplateData!['template'];
+    if (availableTemplatesKeys.isNotEmpty) {
+      final defaultKey = availableTemplatesKeys.first;
+      final templateData = rawTaskTemplates![defaultKey];
+      final templateInfo = templateData['template'];
+
+      selectedTemplateIndex.value = templateKeys.indexOf(defaultKey);
       selectedTemplateId.value = templateInfo['id'] ?? -1;
       selectedTemplateName.value = templateInfo['name'] ?? '';
+      _updateAdditionalFields(defaultKey, initialData: task.additionalData.toList());
+    }
+  }
 
-      _updateAdditionalFields(initialData: task.additionalData.toList());
+  // تحديث منطق تغيير القالب ليشمل تهيئة بيانات التعديل
+  void changeTemplate(String templateKey) {
+    if (templateKeys.contains(templateKey) && availableTemplatesKeys.contains(templateKey)) {
+      final templateData = rawTaskTemplates![templateKey];
+      if (templateData != null && templateData['template'] != null) {
+        final templateInfo = templateData['template'];
+        _updateAdditionalFields(
+            templateKey,
+            initialData: isEditMode.value ? taskModelForEdit.value!.additionalData.toList() : null
+        );
+        selectedTemplateIndex.value = templateKeys.indexOf(templateKey);
+        selectedTemplateId.value = templateInfo['id'] ?? -1;
+        selectedTemplateName.value = templateInfo['name'] ?? '';
+      }
+
     }
   }
 
   // 💡 إزالة دالة changeTemplate واستبدالها بالمنطق المبسّط لـ _updateAdditionalFields
-  void _updateAdditionalFields({List<AdditionalDataModel>? initialData}) {
-    if (rawTaskTemplateData == null) return;
+  void _updateAdditionalFields(String templateKey, {List<AdditionalDataModel>? initialData}) {
+    if (rawTaskTemplates == null || rawTaskTemplates![templateKey] == null) return;
 
-    final List<dynamic> fieldsJson = rawTaskTemplateData!['fields'];
+    final List<dynamic> fieldsJson = rawTaskTemplates![templateKey]['fields'];
 
     additionalFields.clear();
 
@@ -296,8 +340,8 @@ class ValidationOneController extends GetxController {
       return {};
     }
 
-    if (rawTaskTemplateData == null) {
-      Get.snackbar("خطأ", "لم يتم تحميل بيانات القالب.", snackPosition: SnackPosition.BOTTOM);
+    if (selectedTemplateIndex.value == -1 || rawTaskTemplates == null) {
+      Get.snackbar("خطأ", "لم يتم تحميل أو اختيار قالب بيانات إضافية.", snackPosition: SnackPosition.BOTTOM);
       return {};
     }
 
@@ -338,7 +382,7 @@ class ValidationOneController extends GetxController {
             Get.snackbar("خطأ", "ملف ${field.label} مطلوب.", snackPosition: SnackPosition.BOTTOM);
             return {};
           }
-          additionalFieldsPayload["${field.name}_file"] = fileValue;
+          additionalFieldsPayload["${field.name}_file_file"] = fileValue;
           additionalFieldsPayload["${field.name}_text"] = field.textValue.value;
           break;
 
@@ -347,18 +391,18 @@ class ValidationOneController extends GetxController {
             Get.snackbar("خطأ", "الملف وتاريخ الانتهاء لـ ${field.label} مطلوبان.", snackPosition: SnackPosition.BOTTOM);
             return {};
           }
-          additionalFieldsPayload["${field.name}_file"] = fileValue;
+          additionalFieldsPayload["${field.name}_file_file"] = fileValue;
           additionalFieldsPayload["${field.name}_expiration"] = field.expirationDate.value?.toIso8601String().substring(0, 10);
           break;
       }
     }
 
-    // يتم استخدام rawTaskTemplateData مباشرة
-    final templateId = rawTaskTemplateData!['template']['id'];
+    final currentTemplateKey = availableTemplatesKeys[selectedTemplateIndex.value];
+    final templateData = rawTaskTemplates![currentTemplateKey];
 
     return {
       "vehicles": vehiclesPayload,
-      "template": templateId,
+      "template": templateData['template']['id'],
       "additional_fields": additionalFieldsPayload,
     };
   }
@@ -517,8 +561,8 @@ print("niaaaaaaaaaaaaafff${request.fields}");
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildVehiclesSection(),
-                // const SizedBox(height: 30),
-                // _buildTemplateSelection(),
+                const SizedBox(height: 30),
+                _buildTemplateSelection(),
                 const SizedBox(height: 30),
                 if (controller.additionalFields.isNotEmpty)
                   _buildAdditionalFieldsSection(),
@@ -621,6 +665,39 @@ print("niaaaaaaaaaaaaafff${request.fields}");
     );
   }
 
+  Widget _buildTemplateSelection() {
+    return Obx(() {
+      if (controller.availableTemplatesKeys.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      final String selectedKey = controller.availableTemplatesKeys.firstWhere(
+              (key) => controller.templateKeys.indexOf(key) == controller.selectedTemplateIndex.value,
+          orElse: () => controller.availableTemplatesKeys.first
+      );
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("اختيار قالب البيانات الإضافية", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Divider(),
+          _buildDropdown<String>(
+            title: "القالب المختار",
+            value: selectedKey,
+            items: controller.availableTemplatesKeys.map((key) => DropdownMenuItem(
+                value: key,
+                child: Text(controller.templateTitlesMap[key] ?? key)
+            )).toList(),
+            onChanged: (newKey) {
+              if (newKey != null) {
+                controller.changeTemplate(newKey);
+              }
+            },
+          ),
+        ],
+      );
+    });
+  }
 
   Widget _buildDropdown<T>({required String title, required T value, required List<DropdownMenuItem<T>> items, required ValueChanged<T?> onChanged}) {
     return Padding(

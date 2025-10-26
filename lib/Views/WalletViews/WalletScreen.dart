@@ -32,9 +32,16 @@ class WalletController extends GetxController {
       if (data["status"] == 200) {
         walletId.value = data["data"]["wallet"]["id"] ?? 0;
         walletStatus.value = data["data"]["wallet"]["status"] ?? false;
-        walletBalance.value = (data["data"]["wallet"]["balance"] ?? 0)
-            .toDouble();
+        walletBalance.value = double.parse (data["data"]["wallet"]["balance"] ?? "0.0");
         walletCurrency.value = data["data"]["wallet"]["currency"] ?? '';
+
+
+        totalDebit.value = double.parse(data["data"]["statistics"]["total_debit"] ?? "0.0");
+        totalCredit.value = double.parse(data["data"]["statistics"]["total_credit"] ?? "0.0");
+        netBalance.value = double.parse(data["data"]["statistics"]["net_balance"] ?? "0.0");
+
+
+
 
         final List<dynamic> dataListJson = data["data"]["recent_transactions"];
         transactionDataList.clear();
@@ -63,6 +70,8 @@ class _WalletScreenState extends State<WalletScreen> {
   @override
   void initState() {
     super.initState();
+    // globals.dashboardIndex = 2;
+
     controller.getData();
   }
 
@@ -203,11 +212,12 @@ class _WalletScreenState extends State<WalletScreen> {
             // Additional Info
             Row(
               children: [
-                Expanded(
-                  child: _buildBalanceInfo(
-                    'total_debit'.tr,
-                    '${controller.totalDebit.value.toStringAsFixed(2)}',
-                    Icons.trending_up,
+                Obx(()=> Expanded(
+                    child: _buildBalanceInfo(
+                      'total_debit'.tr,
+                      '${controller.totalDebit.value.toStringAsFixed(2)}',
+                      Icons.trending_up,
+                    ),
                   ),
                 ),
                 Container(
@@ -215,11 +225,12 @@ class _WalletScreenState extends State<WalletScreen> {
                   height: 40,
                   color: Colors.white.withOpacity(0.3),
                 ),
-                Expanded(
-                  child: _buildBalanceInfo(
-                    'total_credit'.tr,
-                    '${controller.totalCredit.value.toStringAsFixed(2)}',
-                    Icons.trending_down,
+                Obx(()=> Expanded(
+                    child: _buildBalanceInfo(
+                      'total_credit'.tr,
+                      '${controller.totalCredit.value.toStringAsFixed(2)}',
+                      Icons.trending_down,
+                    ),
                   ),
                 ),
               ],

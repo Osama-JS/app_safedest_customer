@@ -29,7 +29,6 @@ class _TasksPageState extends State<TasksPage> {
   final TextEditingController searchController = TextEditingController();
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     globals.dashboardIndex = 1;
   }

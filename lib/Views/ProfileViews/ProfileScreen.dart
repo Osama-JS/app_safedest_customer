@@ -162,11 +162,11 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
         actions: [
           IconButton(
             onPressed: () {
-              Token_pref.setToken("");
-              User_pref.setUser("");
-              globals.user = null;
-              Get.off(Splash());
-              // _showConfirmationDialog();
+              // Token_pref.setToken("");
+              // User_pref.setUser("");
+              // globals.user = null;
+              // Get.off(Splash());
+              _showConfirmationDialog();
             },
             icon: Icon(Icons.logout),
           ),

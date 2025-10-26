@@ -48,7 +48,7 @@ class TaskController extends GetxController {
       if(data["status"]==200) {
 
         final List<dynamic> dataListJson = data["data"]["tasks"];
-        lastItem.value = data["data"]["pagination"]["to"];
+        lastItem.value = data["data"]["pagination"]["to"]??0;
 
         if (isFirstTime.value) {
 
@@ -64,7 +64,7 @@ class TaskController extends GetxController {
         }
         currentPage++;
       }
-print("saeeeeeeeeeeeeedddddddddd : ${data["data"]["tasks"][0]["ad"]}");
+
 
     } catch (e) {
       isThereError.value=true;

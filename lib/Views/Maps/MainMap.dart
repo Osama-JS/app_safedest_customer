@@ -21,6 +21,7 @@ import '../../Globals/global_methods.dart' as GM;
 import '../../Globals/global.dart' as globals;
 import 'package:http/http.dart' as http;
 import '../TaskViews/AddTaskViews/AddTaskPage.dart';
+import '../TaskViews/AddTaskViews/ValidationOnePage.dart';
 
 // 💡 إضافة مساعدة لتحويل اللون إلى صيغة Hex لاستخدامها في Mapbox Line Color
 extension ColorExtension on Color {
@@ -259,12 +260,8 @@ class _MainMap extends State<MainMap> {
                         right: 20,
                         child: FloatingActionButton(
                           onPressed: () {
-                            Get.to(
-                              () => AddTaskPage(
-                                stepTwoResponse: http.Response('{}', 200),
-                                priceMethodId: 1,
-                              ),
-                            );
+                            Get.to(ValidationOnePage());
+
                           },
                           backgroundColor: MyColors.primaryColor,
                           child: const Icon(
@@ -565,13 +562,13 @@ class _MainMap extends State<MainMap> {
     if (searchQuery.isEmpty) {
       return const SizedBox();
     }
-    bool hasDriver =
-        mapController.dataList[mapController.tapedIndex.value].driverName !=
-            null &&
-        mapController
-            .dataList[mapController.tapedIndex.value]
-            .driverName!
-            .isNotEmpty;
+    // bool hasDriver =
+    //     mapController.dataList[mapController.tapedIndex.value].driverName !=
+    //         null &&
+    //     mapController
+    //         .dataList[mapController.tapedIndex.value]
+    //         .driverName!
+    //         .isNotEmpty;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -580,13 +577,17 @@ class _MainMap extends State<MainMap> {
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Container(
-          constraints: const BoxConstraints(maxHeight: 200),
+          constraints: const BoxConstraints(maxHeight: 500),
           child: Obx(
             () => ListView.builder(
               shrinkWrap: true,
               itemCount: searchResults.length,
               itemBuilder: (context, index) {
                 final item = searchResults[index];
+
+                bool hasDriver = item.driverName != null && item.driverName!
+                    .isNotEmpty;
+
                 return InkWell(
                   onTap: () {
                     searchQuery.value = '';
@@ -740,6 +741,10 @@ class _MainMap extends State<MainMap> {
                           color: Colors.grey,
                         ),
                       ),
+                      SizedBox(height: 5,),
+                      Divider(height: 2,color: Colors.grey,),
+                      SizedBox(height: 10,),
+
                     ],
                   ),
                 );

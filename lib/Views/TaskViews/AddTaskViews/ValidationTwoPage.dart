@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
@@ -71,11 +72,13 @@ class ValidationTwoController extends GetxController {
   final Rx<PricingParam?> selectedPricingParam = Rx<PricingParam?>(null);
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
+  final RxString pickupImage = ''.obs;
   final RxString pickupAddress = ''.obs;
   final RxDouble pickupLatitude = 0.0.obs;
   final RxDouble pickupLongitude = 0.0.obs;
   final Rx<DateTime?> pickupBeforeDate = Rx<DateTime?>(null);
 
+  final RxString deliveryImage = ''.obs;
   final RxString deliveryAddress = ''.obs;
   final RxDouble deliveryLatitude = 0.0.obs;
   final RxDouble deliveryLongitude = 0.0.obs;
@@ -161,6 +164,7 @@ class ValidationTwoController extends GetxController {
     pickupAddress.value = task.pickup.address.value;
     pickupLatitude.value = task.pickup.lat.value;
     pickupLongitude.value = task.pickup.lng.value;
+    pickupImage.value = task.pickup.image.value;
     print("dddddddd"+pickupLatitude.value.toString());
     print("dddddddd"+pickupLongitude.value.toString());
     if (task.pickup.scheduledTime.isNotEmpty) {
@@ -173,6 +177,7 @@ class ValidationTwoController extends GetxController {
     deliveryAddress.value = task.delivery.address.value;
     deliveryLatitude.value = task.delivery.lat.value;
     deliveryLongitude.value = task.delivery.lng.value;
+    deliveryImage.value = task.delivery.image.value;
     if (task.delivery.scheduledTime.isNotEmpty) {
       deliveryBeforeDate.value = DateTime.tryParse(task.delivery.scheduledTime.value.split(' ')[0]);
     }
@@ -232,6 +237,13 @@ class ValidationTwoController extends GetxController {
       "delivery_note": deliveryNoteController.text,
 
       "conditions": conditionsController.text,
+
+      if(pickupImage.value!=''&&!pickupImage.value.startsWith("http"))
+      "pickup_image":pickupImage.value,
+
+      if(deliveryImage.value!=''&&!deliveryImage.value.startsWith("http"))
+      "delivery_image":deliveryImage.value,
+
     };
 
     if (isEditMode.value && taskModelForEdit.value != null) {
@@ -368,9 +380,39 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
         if(payload2[key].toString()!="null"&&payload2[key].toString()!=""){
           request.fields[key] = payload2[key].toString();
         }
-      }else {
+      }
+
+
+      else if(key.contains("image")){
+
+
+        String imageValue = payload2[key].toString();
+
+        if (imageValue.isNotEmpty && !imageValue.startsWith('http')) {
+          File file = File(imageValue);
+          if (await file.exists()) {
+            var multipartFile = await http.MultipartFile.fromPath(
+              key,
+              imageValue,
+              filename: basename(imageValue),
+            );
+            request.files.add(multipartFile);
+          }
+        }
+
+
+      }
+
+      else {
         request.fields[key] = payload2[key].toString();
       }
+    }
+
+    for(var f in request.files){
+      print("saeeeeeeeeeeeeeeeeedddddddddd file : ${f.field}");
+
+      print("saeeeeeeeeeeeeeeeeedddddddddd file : ${f.filename}");
+
     }
 
     try {
@@ -520,6 +562,10 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
         _buildLocationPicker(context, isPickup: isPickup, address: address),
 
         _buildDateTimePicker(label: "يجب أن يتم قبل", date: date, isRequired: true),
+
+        Text(isPickup ? "اختر صورة موقع الاستلام (اختياري)": "اختر صورة موقع التسليم (اختياري)"),
+        _buildFilePicker(isPickup ? controller.pickupImage: controller.deliveryImage),
+
         _buildTextField(label: "ملاحظات إضافية (اختياري)", isRequired: false, maxLines: 3, controller: noteController),
       ],
     );
@@ -635,4 +681,57 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
       )),
     );
   }
+
+
+
+
+  Widget _buildFilePicker(RxString imageUrl) {
+
+
+    Future<void> _pickFile() async {
+
+
+      // تحديد الامتدادات المسموح بها:
+      final List<String> extensions =  ['jpg', 'jpeg', 'png'] ;
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: extensions,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        final filePath = result.files.single.path!;
+        imageUrl.value= filePath;
+
+
+      }
+    }
+
+    return Obx(() => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (imageUrl.value.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8.0),
+            child: Text(
+              "الملف المختار: ${imageUrl.value.startsWith('http') ? "ملف قديم محفوظ" : imageUrl.value.split('/').last}",
+              style: TextStyle(
+                fontSize: 14,
+                fontStyle: FontStyle.italic,
+                color: imageUrl.value.startsWith('http') ? Colors.blue.shade700 : Colors.black87,
+              ),
+            ),
+          ),
+        Obx(()=> ElevatedButton.icon(
+          onPressed: _pickFile,
+          icon: Icon(imageUrl.value.isEmpty ? Icons.upload_file : Icons.check_circle, color: Colors.white),
+          label: Text(imageUrl.value.isEmpty ? "اختر ملف" : "تغيير الملف المختار", style: const TextStyle(color: Colors.white)),
+          style: ElevatedButton.styleFrom(backgroundColor: imageUrl.value.isEmpty ? Colors.blue.shade700 : Colors.green.shade700),
+        ),
+        ),
+
+      ],
+    ));
+  }
+
+
 }

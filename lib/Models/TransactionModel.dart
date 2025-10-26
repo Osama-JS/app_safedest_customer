@@ -35,7 +35,7 @@ class TransactionModel {
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
     return TransactionModel(
       id: json['id'] ?? 0,
-      amount: (json['amount'] is num) ? (json['amount'] as num).toDouble() : 0.0,
+      amount: double.parse (json['amount'] ?? "0.0"),
       transactionType: json['transaction_type'] ?? '',
       description: json['description'] ?? '',
       sequence: json['sequence'] ?? 0,

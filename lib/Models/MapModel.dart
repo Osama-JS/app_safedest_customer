@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 class MapModel {
   final RxInt id;
   final RxString status;
+  final RxString mainStatus;
   final RxString lat;
   final RxString lng;
   final RxString pickupAddress;
@@ -18,6 +19,7 @@ class MapModel {
   MapModel({
     int id = 0,
     String status = '',
+    String mainStatus = '',
     String lat = '',
     String lng = '',
     String pickupAddress = '',
@@ -29,26 +31,28 @@ class MapModel {
     String currency = '',
     String? vehicle,
     String createdAt = '',
-  })  : id = id.obs,
-        status = status.obs,
-        lat = lat.obs,
-        lng = lng.obs,
-        pickupAddress = pickupAddress.obs,
-        deliveryAddress = deliveryAddress.obs,
-        driverName = driverName?.obs,
-        driverPhone = driverPhone?.obs,
-        driverImage = driverImage?.obs,
-        price = price.obs,
-        currency = currency.obs,
-        vehicle = vehicle?.obs,
-        createdAt = createdAt.obs;
+  }) : id = id.obs,
+       status = status.obs,
+       mainStatus = mainStatus.obs,
+       lat = lat.obs,
+       lng = lng.obs,
+       pickupAddress = pickupAddress.obs,
+       deliveryAddress = deliveryAddress.obs,
+       driverName = driverName?.obs,
+       driverPhone = driverPhone?.obs,
+       driverImage = driverImage?.obs,
+       price = price.obs,
+       currency = currency.obs,
+       vehicle = vehicle?.obs,
+       createdAt = createdAt.obs;
 
   factory MapModel.fromJson(Map<String, dynamic> json) {
     return MapModel(
       id: json['id'] ?? 0,
       status: json['status'] ?? '',
-      lat: json['lat'] ??"0.0",
-      lng: json['lng']??"0.0",
+      mainStatus: json['main_status'] ?? '',
+      lat: json['lat'] ?? "0.0",
+      lng: json['lng'] ?? "0.0",
       pickupAddress: json['pickup_address'] ?? '',
       deliveryAddress: json['delivery_address'] ?? '',
       driverName: json['driver_name'],
@@ -65,6 +69,7 @@ class MapModel {
     return {
       'id': id.value,
       'status': status.value,
+      'main_status': mainStatus.value,
       'lat': lat.value,
       'lng': lng.value,
       'pickup_address': pickupAddress.value,

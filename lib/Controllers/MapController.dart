@@ -29,24 +29,25 @@ class MapController extends GetxController {
   RxString myLate = "21.4225".obs; // العرض
 
   // استخدام PointAnnotationOptions لتخزين خيارات العلامات
-  RxList<PointAnnotationOptions> mapMarkersOptions = <PointAnnotationOptions>[]
-      .obs;
+  RxList<PointAnnotationOptions> mapMarkersOptions =
+      <PointAnnotationOptions>[].obs;
 
   var dataList = <MapModel>[].obs;
   RxBool isLoadingData = true.obs;
 
+  // إحصائيات المهام حسب main_status
+  RxMap<String, int> taskStats = <String, int>{}.obs;
+
   // استخدام Point من Mapbox للإحداثيات
   RxList<Point> positions = <Point>[].obs;
-  final markersMap = <String, int>{}
-      .obs; // لتخزين العلاقة بين markerId والـ index
+  final markersMap =
+      <String, int>{}.obs; // لتخزين العلاقة بين markerId والـ index
 
   RxInt tapedIndex = 0.obs;
   RxBool showInfo = false.obs;
 
   // لحفظ معرفات العلامات التي تم إنشاؤها على الخريطة لتحديثها
   final RxList<String> createdAnnotationIds = <String>[].obs;
-
-
 
   getData() async {
     try {
@@ -56,13 +57,14 @@ class MapController extends GetxController {
       if (data["status"] == 200) {
         final List<dynamic> dataListJson = data["data"];
         dataList.clear();
-        dataList.value = dataListJson.map((item) => MapModel.fromJson(item)).toList();
+        dataList.value = dataListJson
+            .map((item) => MapModel.fromJson(item))
+            .toList();
         mapMarkersOptions.clear();
         positions.clear();
         markersMap.clear();
 
         for (int i = 0; i < dataList.length; i++) {
-          print("nnnnnnnnnnnniaaaaaaaaaaaaaaaaaaaa$i");
           final mapdata = dataList[i];
           final markerId = '${mapdata.id.value}';
           markersMap[markerId] = i;
@@ -73,10 +75,9 @@ class MapController extends GetxController {
 
           // Mapbox يستخدم (Longitude, Latitude)
           Position positionCoordinates = Position(
-              double.parse(mapdata.lng.value), // Longitude (الطول)
-              double.parse(mapdata.lat.value) // Latitude (العرض)
+            double.parse(mapdata.lng.value), // Longitude (الطول)
+            double.parse(mapdata.lat.value), // Latitude (العرض)
           );
-
 
           // إنشاء Point
           Point point = Point(coordinates: positionCoordinates);
@@ -84,6 +85,11 @@ class MapController extends GetxController {
           positions.add(point);
 
           // إنشاء PointAnnotationOptions بدلاً من Marker
+          // اختيار الأيقونة المناسبة حسب main_status
+          final iconImage = iniService.getIconForMainStatus(
+            dataList[i].mainStatus.value,
+          );
+
           mapMarkersOptions.add(
             PointAnnotationOptions(
               textField: markerId.toString(),
@@ -92,15 +98,16 @@ class MapController extends GetxController {
               iconSize: 0.3,
               iconOffset: [0.0, -17.0],
               symbolSortKey: markersMap[markerId]!.toDouble(),
-              image: iniService.mapTargetIcon,
+              image: iconImage,
             ),
           );
         }
 
+        // حساب الإحصائيات
+        _calculateTaskStats();
+
         isLoadingData.value = false;
       }
-
-
     } catch (e) {
       isLoadingData.value = false;
       print("MapController error: $e");
@@ -108,4 +115,22 @@ class MapController extends GetxController {
     }
   }
 
+  // حساب إحصائيات المهام حسب main_status
+  void _calculateTaskStats() {
+    taskStats.clear();
+
+    // تهيئة العدادات
+    taskStats['in_progress'] = 0;
+    taskStats['advertised'] = 0;
+    taskStats['running'] = 0;
+    taskStats['completed'] = 0;
+
+    // حساب العدد لكل حالة
+    for (var task in dataList) {
+      final mainStatus = task.mainStatus.value;
+      if (taskStats.containsKey(mainStatus)) {
+        taskStats[mainStatus] = taskStats[mainStatus]! + 1;
+      }
+    }
+  }
 }

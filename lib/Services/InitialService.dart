@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui';
@@ -8,9 +7,6 @@ import 'package:get/get.dart';
 import 'dart:ui' as ui;
 import 'package:flutter_svg/flutter_svg.dart';
 
-
-
-
 class InitialService extends GetxService {
   static InitialService get to => Get.find();
 
@@ -19,20 +15,25 @@ class InitialService extends GetxService {
   RxInt userType = 0.obs;
   RxInt vat = 0.obs;
 
-  RxString userEmail="".obs;
-  RxString userName="".obs;
-  RxString userImage="".obs;
-  RxString userPhone="".obs;
+  RxString userEmail = "".obs;
+  RxString userName = "".obs;
+  RxString userImage = "".obs;
+  RxString userPhone = "".obs;
 
   @override
   void onInit() {
     super.onInit();
     loadMapTargetIcon();
     loadMapTargetIcon2();
+    loadMapStatusIcons();
   }
 
   late Uint8List mapTargetIcon;
   late Uint8List mapMyPointIcon;
+  late Uint8List mapTargetInProgressIcon;
+  late Uint8List mapTargetCompletedIcon;
+  late Uint8List mapTargetAdvertisedIcon;
+  late Uint8List mapTargetRunningIcon;
   // loadMapTargetIcon() async {
   //   try {
   //     final ByteData bytes = await rootBundle.load('assets/images/target.png');
@@ -101,15 +102,48 @@ class InitialService extends GetxService {
     final ByteData bytes = await rootBundle.load('assets/images/target.png');
     mapTargetIcon = bytes.buffer.asUint8List();
   }
+
   loadMapTargetIcon2() async {
     final ByteData bytes = await rootBundle.load('assets/images/myPoint.png');
     mapMyPointIcon = bytes.buffer.asUint8List();
   }
 
+  loadMapStatusIcons() async {
+    // تحميل أيقونات الحالات المختلفة
+    final ByteData inProgressBytes = await rootBundle.load(
+      'assets/images/target_in_progress.png',
+    );
+    mapTargetInProgressIcon = inProgressBytes.buffer.asUint8List();
 
+    final ByteData completedBytes = await rootBundle.load(
+      'assets/images/target_complete.png',
+    );
+    mapTargetCompletedIcon = completedBytes.buffer.asUint8List();
 
+    final ByteData advertisedBytes = await rootBundle.load(
+      'assets/images/target_advertiser.png',
+    );
+    mapTargetAdvertisedIcon = advertisedBytes.buffer.asUint8List();
 
+    final ByteData runningBytes = await rootBundle.load(
+      'assets/images/target_running.png',
+    );
+    mapTargetRunningIcon = runningBytes.buffer.asUint8List();
+  }
 
-
+  // دالة للحصول على الأيقونة المناسبة حسب main_status
+  Uint8List getIconForMainStatus(String mainStatus) {
+    switch (mainStatus) {
+      case 'in_progress':
+        return mapTargetInProgressIcon;
+      case 'completed':
+        return mapTargetCompletedIcon;
+      case 'advertised':
+        return mapTargetAdvertisedIcon;
+      case 'running':
+        return mapTargetRunningIcon;
+      default:
+        return mapTargetIcon; // الأيقونة الافتراضية
+    }
+  }
 }
-

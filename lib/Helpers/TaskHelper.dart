@@ -7,35 +7,43 @@ import '../Globals/global.dart' as globals;
 import '../shared_prff.dart';
 import '../Globals/global_methods.dart' as global_methods;
 
-class TaskHelper{
-
-  getData(int page,String sortBy,String filter,String search,  var token)async{
-
-    var  url = Uri.parse("${globals.public_uri}tasks/data");
+class TaskHelper {
+  getData(
+    int page,
+    String sortBy,
+    String filter,
+    String search,
+    var token,
+  ) async {
+    var url = Uri.parse("${globals.public_uri}tasks/data");
 
     var body = jsonEncode({
-      "page":page,
-      "per_page":10,
-      "sort_by":sortBy,
-      "search":search,
-      "status":filter,
-      // "status":"running",
+      "page": page,
+      "per_page": 10,
+      "sort_by": sortBy,
+      "search": search,
+      "status": filter,
 
+      // "status":"running",
     });
 
-
-    var response = await http.post(url,body: body, headers: {
-      "Accept": "application/json",
-      "Accept-Language": global_methods.getLanguage(),
-      "content-type": "application/json",
-      "Authorization": "Bearer $token"
-
-    }).timeout(
-        const Duration(minutes: 1),
-        onTimeout: () {
-          return http.Response('Errorr', 408);
-        }
-    );
+    var response = await http
+        .post(
+          url,
+          body: body,
+          headers: {
+            "Accept": "application/json",
+            "Accept-Language": global_methods.getLanguage(),
+            "content-type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+        )
+        .timeout(
+          const Duration(minutes: 1),
+          onTimeout: () {
+            return http.Response('Errorr', 408);
+          },
+        );
     print("saeeeeeeeeeeedddddddd data: ${response.body}");
     print("saeeeeeeeeeeedddddddd data: ${response.statusCode}");
 
@@ -45,25 +53,55 @@ class TaskHelper{
     return data;
   }
 
+  // Get detailed task information
+  getTaskDetails(int taskId, var token) async {
+    var url = Uri.parse("${globals.public_uri}tasks/$taskId");
 
-  getAddIni(  var token)async{
+    var response = await http
+        .get(
+          url,
+          headers: {
+            "Accept": "application/json",
+            "Accept-Language": global_methods.getLanguage(),
+            "content-type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+        )
+        .timeout(
+          const Duration(minutes: 1),
+          onTimeout: () {
+            return http.Response('Error', 408);
+          },
+        );
 
-    var  url = Uri.parse("${globals.public_uri}inti-tasks");
+    print("Task details response: ${response.body}");
+    print("Task details status: ${response.statusCode}");
 
+    var data = jsonDecode(response.body);
+    print("Task details data: ${jsonDecode(response.body)}");
 
+    return data;
+  }
 
-    var response = await http.get(url, headers: {
-      "Accept": "application/json",
-      "Accept-Language": global_methods.getLanguage(),
-      "content-type": "application/json",
-      "Authorization": "Bearer $token"
+  getAddIni(var token) async {
+    var url = Uri.parse("${globals.public_uri}inti-tasks");
 
-    }).timeout(
-        const Duration(minutes: 1),
-        onTimeout: () {
-          return http.Response('Errorr', 408);
-        }
-    );
+    var response = await http
+        .get(
+          url,
+          headers: {
+            "Accept": "application/json",
+            "Accept-Language": global_methods.getLanguage(),
+            "content-type": "application/json",
+            "Authorization": "Bearer $token",
+          },
+        )
+        .timeout(
+          const Duration(minutes: 1),
+          onTimeout: () {
+            return http.Response('Errorr', 408);
+          },
+        );
     print("saeeeeeeeeeeedddddddd data: ${response.body}");
     print("saeeeeeeeeeeedddddddd data: ${response.statusCode}");
 
@@ -72,23 +110,25 @@ class TaskHelper{
 
     return data;
   }
-  getAddIni2()async{
 
-    var  url = Uri.parse("${globals.public_uri}template");
+  getAddIni2() async {
+    var url = Uri.parse("${globals.public_uri}template");
 
-
-
-    var response = await http.get(url, headers: {
-      "Accept": "application/json",
-      "Accept-Language": global_methods.getLanguage(),
-      "content-type": "application/json",
-
-    }).timeout(
-        const Duration(minutes: 1),
-        onTimeout: () {
-          return http.Response('Errorr', 408);
-        }
-    );
+    var response = await http
+        .get(
+          url,
+          headers: {
+            "Accept": "application/json",
+            "Accept-Language": global_methods.getLanguage(),
+            "content-type": "application/json",
+          },
+        )
+        .timeout(
+          const Duration(minutes: 1),
+          onTimeout: () {
+            return http.Response('Errorr', 408);
+          },
+        );
     print("saeeeeeeeeeeedddddddd data: ${response.body}");
     print("saeeeeeeeeeeedddddddd data: ${response.statusCode}");
 
@@ -97,7 +137,4 @@ class TaskHelper{
 
     return data;
   }
-
-
-
 }

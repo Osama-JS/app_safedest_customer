@@ -14,6 +14,7 @@ import '../Widgets/AnimatedSearchBar.dart';
 import '../Widgets/ProgressWithIcon.dart';
 import '../Widgets/custom_image_view.dart';
 import 'AddTaskViews/ValidationOnePage.dart';
+import 'TaskDetailsPage.dart';
 import '../../Globals/global.dart' as globals;
 
 class TasksPage extends StatefulWidget {
@@ -354,237 +355,189 @@ class _TasksPageState extends State<TasksPage> {
   Widget _buildCard(TaskModel item, int index) {
     return Obx(
       () => Card(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        elevation: 2,
+        margin: const EdgeInsets.only(bottom: 16),
+        elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // --- العنوان العلوي: المهمة + الحالة ---
-              Row(
-                children: [
-                  Text(
-                    '#${item.id.value}',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _getStatusColor(item.status.value).withAlpha(30),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      _getStatusLabel(item.status.value),
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: _getStatusColor(item.status.value),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-
-                  if ((item.status.value == "in_progress" ||
-                          item.status.value == "advertised") &&
-                      item.driver.name.value == '')
-                    IconButton(
-                      onPressed: () {
-                        controller.pressedIndex.value = index;
-                        Get.to(
-                          () => ValidationOnePage(
-                            taskIdForEdit: item.id.value,
-                            taskModelForEdit: item,
-                          ),
-                        );
-                      },
-                      icon: Icon(Icons.edit),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // --- المبلغ وطريقة الدفع ---
-              Row(
-                children: [
-                  Text(
-                    '${item.id.value.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: item.paymentStatus.value == 'paid'
-                          ? Colors.green.withAlpha(30)
-                          : Colors.red.withAlpha(30),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                    child: Text(
-                      item.paymentStatus.value == 'paid'
-                          ? 'paid'.tr
-                          : 'unpaid'.tr,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: item.paymentStatus.value == 'paid'
-                            ? Colors.green
-                            : Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    item.paymentMethod.value == 'cash'
-                        ? 'cash'.tr
-                        : 'electronic'.tr,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-
-              // --- الاستلام والتسليم ---
-              _buildLocationSection(
-                icon: Icons.location_on_outlined,
-                title: 'task_pickup'.tr,
-                address: item.pickup.address.value,
-                time: global_methods.formatDateTime(
-                  item.pickup.scheduledTime.value,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildLocationSection(
-                icon: Icons.delivery_dining_outlined,
-                title: 'task_delivery'.tr,
-                address: item.delivery.address.value,
-                time: global_methods.formatDateTime(
-                  item.delivery.scheduledTime.value,
-                ),
-              ),
-
-              // --- بيانات السائق (إن وُجد) ---
-              if (item.driver.name.value != '')
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Row(
-                    children: [
-                      const Icon(
-                        Icons.person_outline,
-                        size: 16,
-                        color: Colors.grey,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '${'task_driver'.tr}: ${item.driver.name.value}',
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () => _viewTaskDetails(item),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // --- Header: Task ID + Status ---
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'task_number'.trParams({
+                          'number': item.id.value.toString(),
+                        }),
                         style: const TextStyle(
-                          fontSize: 13,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      if (item.driver.phone.value != '')
-                        TextButton(
-                          onPressed: () =>
-                              launchPhoneCall(item.driver.phone.value),
-                          child: Text(
-                            item.driver.phone.value,
-                            style: const TextStyle(
-                              color: Colors.blue,
-                              fontSize: 13,
-                            ),
-                          ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(item.status.value),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Text(
+                        _getStatusLabel(item.status.value),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // --- Pickup Address ---
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on,
+                      color: Colors.green,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${'from'.tr}: ${item.pickup.address.value}',
+                        style: const TextStyle(fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // --- Delivery Address ---
+                Row(
+                  children: [
+                    const Icon(Icons.flag, color: Colors.red, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '${'to'.tr}: ${item.delivery.address.value}',
+                        style: const TextStyle(fontSize: 14),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
 
-              // --- ملاحظات إضافية ---
-              if (item.additionalData.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                const SizedBox(height: 12),
+
+                // --- Price and Payment Status ---
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Show price range for advertised tasks, regular price for others
+                    if (item.status.value == 'advertised' &&
+                        item.ad.value != null &&
+                        item.ad.value!.min > 0 &&
+                        item.ad.value!.max > 0)
                       Text(
-                        '${'additional_details'.tr}:',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      for (var i in item.additionalData)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: Text.rich(
-                            TextSpan(
-                              text: '${i.label.value}: ',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
-                              children: [
-                                TextSpan(
-                                  text: i.value.value,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.normal,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                        '${item.ad.value!.min.toStringAsFixed(2)} - ${item.ad.value!.max.toStringAsFixed(2)} ${'currency'.tr}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFd40019),
                         ),
-                    ],
-                  ),
+                      )
+                    else
+                      Text(
+                        '${item.price.value.toStringAsFixed(2)} ${'currency'.tr}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFd40019),
+                        ),
+                      ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: item.paymentStatus.value == 'paid'
+                            ? Colors.green
+                            : Colors.orange,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        item.paymentStatus.value.tr,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildLocationSection({
-    required IconData icon,
-    required String title,
-    required String address,
-    required String time,
-  }) {
-    return Column(
+  Widget _buildAddressRow(
+    BuildContext context,
+    String label,
+    String address,
+    IconData icon,
+    Color color,
+  ) {
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Icon(icon, size: 16, color: Colors.grey),
-            const SizedBox(width: 6),
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          address,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 13, color: Colors.black87),
-        ),
-        Text(
-          '${'time'.tr}: $time',
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
+        Icon(icon, color: color, size: 20),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: color,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                address,
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ],
     );
+  }
+
+  void _viewTaskDetails(TaskModel task) {
+    Get.to(() => TaskDetailsPage(task: task));
   }
 
   void launchPhoneCall(String phone) {

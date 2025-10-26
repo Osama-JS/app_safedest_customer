@@ -11,6 +11,7 @@ import 'package:location/location.dart' as loc;
 import 'package:save_dest_customer/Views/Widgets/ProgressWithIcon.dart';
 import '../../Controllers/MapController.dart';
 import '../../Globals/MyColors.dart';
+import '../../Widgets/TaskStatsCard.dart';
 import '../../Globals/style.dart';
 import '../../theme/app_theme.dart';
 import '../../theme/app_decorations.dart';
@@ -261,7 +262,6 @@ class _MainMap extends State<MainMap> {
                         child: FloatingActionButton(
                           onPressed: () {
                             Get.to(ValidationOnePage());
-
                           },
                           backgroundColor: MyColors.primaryColor,
                           child: const Icon(
@@ -271,6 +271,9 @@ class _MainMap extends State<MainMap> {
                           ),
                         ),
                       ),
+
+                      // بطاقة إحصائيات المهام
+                      const TaskStatsCard(),
 
                       if (mapController.showInfo.value)
                         Positioned(
@@ -585,8 +588,8 @@ class _MainMap extends State<MainMap> {
               itemBuilder: (context, index) {
                 final item = searchResults[index];
 
-                bool hasDriver = item.driverName != null && item.driverName!
-                    .isNotEmpty;
+                bool hasDriver =
+                    item.driverName != null && item.driverName!.isNotEmpty;
 
                 return InkWell(
                   onTap: () {
@@ -741,10 +744,9 @@ class _MainMap extends State<MainMap> {
                           color: Colors.grey,
                         ),
                       ),
-                      SizedBox(height: 5,),
-                      Divider(height: 2,color: Colors.grey,),
-                      SizedBox(height: 10,),
-
+                      SizedBox(height: 5),
+                      Divider(height: 2, color: Colors.grey),
+                      SizedBox(height: 10),
                     ],
                   ),
                 );

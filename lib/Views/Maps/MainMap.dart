@@ -7,7 +7,6 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:location/location.dart' as loc;
 import 'package:save_dest_customer/Views/Widgets/ProgressWithIcon.dart';
 import '../../Controllers/MapController.dart';
 import '../../Globals/MyColors.dart';
@@ -53,7 +52,6 @@ class _MainMap extends State<MainMap> {
     coordinates: Position(39.8262, 21.4225),
   ); // (Lng, Lat)
 
-  final loc.Location _location = loc.Location();
   CameraOptions? _initialCameraOptions;
 
   // 🏆 إضافة: لتخزين الوجهة المحددة حاليًا
@@ -81,7 +79,7 @@ class _MainMap extends State<MainMap> {
   @override
   void dispose() {
     _debounceTimer?.cancel();
-    _locationSubscription?.cancel();
+    // _locationSubscription?.cancel();
     searchQuery.close();
     searchResults.close();
     annotationManager?.deleteAll();
@@ -98,6 +96,7 @@ class _MainMap extends State<MainMap> {
     annotationManager = await controller.annotations
         .createPointAnnotationManager();
 
+    // annotationManager.
     annotationManager!.tapEvents(
       onTap: (annotation) {
         print("Marker Tapped: ${annotation.textField}");
@@ -111,19 +110,39 @@ class _MainMap extends State<MainMap> {
       },
     );
 
-    // // استخدام البنية الصحيحة لـ Point
-    Point initialMyPoint = Point(
-      coordinates: Position(
-        double.parse(mapController.myLong.value),
-        double.parse(mapController.myLate.value),
-      ),
-    );
-    _updateMarkers(initialMyPoint);
+    // // // استخدام البنية الصحيحة لـ Point
+    // Point initialMyPoint = Point(
+    //   coordinates: Position(
+    //     double.parse(mapController.myLong.value),
+    //     double.parse(mapController.myLate.value),
+    //   ),
+    // );
+    _updateMarkers();
   }
+  void _onCameraChangeListener(CameraChangedEventData event) async {
+    final double currentZoom = event.cameraState.zoom;
+
+    final int currentQuantizedLevel = mapController.getQuantizedZoomLevel(currentZoom);
+
+    print("niaaaaaaaaaaaaaaaaaaaaaaaaaa current zoom: $currentZoom, Quantized Level: $currentQuantizedLevel");
+    if (currentQuantizedLevel != _lastQuantizedZoomLevel) {
+
+      _lastQuantizedZoomLevel = currentQuantizedLevel;
+      mapController.currentZoom.value=currentZoom;
+      mapController.generateClusteredMarkers();
+      _updateMarkers();
+    }
+
+
+  }
+
+
+  int _lastQuantizedZoomLevel = 0;
+
 
   RxBool isLoading = true.obs;
 
-  StreamSubscription<loc.LocationData>? _locationSubscription;
+  // StreamSubscription<loc.LocationData>? _locationSubscription;
 
   // void startLocationTracking() async {
   //   bool serviceEnabled = await _location.serviceEnabled();
@@ -185,10 +204,11 @@ class _MainMap extends State<MainMap> {
   final String _mapboxAccessToken =
       "pk.eyJ1Ijoib3NhbWExOTk4IiwiYSI6ImNtZ280cmw1YjFwNHQya3FxZnY2cjV5cmkifQ.gugWvJf_2VRFnk-3LVaI1w";
 
-  void _updateMarkers(Point myPosition) async {
+  // void _updateMarkers(Point myPosition) async {
+  void _updateMarkers() async {
     if (annotationManager == null) return;
 
-    // await annotationManager!.deleteAll();
+    await annotationManager!.deleteAll();
 
     // 1. إضافة علامة الموقع الحالي
     // final currentMarkerOptions = PointAnnotationOptions(
@@ -208,6 +228,7 @@ class _MainMap extends State<MainMap> {
     await annotationManager!.createMulti(
       mapController.mapMarkersOptions.toList(),
     );
+
     print("nnnnnns");
     setState(() {});
   }
@@ -236,6 +257,8 @@ class _MainMap extends State<MainMap> {
                           cameraOptions: _initialCameraOptions,
 
                           onMapCreated: _onMapCreated,
+                          onCameraChangeListener: _onCameraChangeListener,
+
 
                           onTapListener: (point) {
                             mapController.showInfo.value = false;

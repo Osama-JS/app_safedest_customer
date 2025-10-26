@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import '../../Globals/MyColors.dart';
 
 import '../../shared_prff.dart';
@@ -11,8 +10,6 @@ extension ImageTypeExtension on String {
   ImageType get imageType {
     if (startsWith('http') || startsWith('https')) {
       return ImageType.network;
-    } else if (endsWith('.svg')) {
-      return ImageType.svg;
     } else if (startsWith('file://')) {
       return ImageType.file;
     } else {
@@ -98,22 +95,22 @@ int i=0;
 
     if (imagePath != null) {
       switch (imagePath!.imageType) {
-        case ImageType.svg:
-          return SizedBox(
-            height: height,
-            width: width,
-            child:SvgPicture.asset(
-                imagePath!,
-                height: height,
-                width: width,
-                fit: fit ?? BoxFit.contain,
-              colorFilter: color != null
-                  ? ColorFilter.mode(
-                  color ?? Colors.transparent, BlendMode.srcIn)
-                  : null,
-              ),
-
-          );
+        // case ImageType.svg:
+        //   return SizedBox(
+        //     height: height,
+        //     width: width,
+        //     child:SvgPicture.asset(
+        //         imagePath!,
+        //         height: height,
+        //         width: width,
+        //         fit: fit ?? BoxFit.contain,
+        //       colorFilter: color != null
+        //           ? ColorFilter.mode(
+        //           color ?? Colors.transparent, BlendMode.srcIn)
+        //           : null,
+        //       ),
+        //
+        //   );
         case ImageType.file:
           return Image.file(
             File(imagePath!),

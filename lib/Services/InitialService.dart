@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:get/get.dart';
 import 'dart:ui' as ui;
-import 'package:flutter_svg/flutter_svg.dart';
 
 class InitialService extends GetxService {
   static InitialService get to => Get.find();
@@ -28,7 +27,7 @@ class InitialService extends GetxService {
     loadMapStatusIcons();
   }
 
-  late Uint8List mapTargetIcon;
+    late Uint8List mapTargetIcon;
   late Uint8List mapMyPointIcon;
   late Uint8List mapTargetInProgressIcon;
   late Uint8List mapTargetCompletedIcon;
@@ -103,6 +102,7 @@ class InitialService extends GetxService {
     mapTargetIcon = bytes.buffer.asUint8List();
   }
 
+
   loadMapTargetIcon2() async {
     final ByteData bytes = await rootBundle.load('assets/images/myPoint.png');
     mapMyPointIcon = bytes.buffer.asUint8List();
@@ -143,7 +143,7 @@ class InitialService extends GetxService {
       case 'running':
         return mapTargetRunningIcon;
       default:
-        return mapTargetIcon; // الأيقونة الافتراضية
+        return mapTargetInProgressIcon;
     }
   }
 }

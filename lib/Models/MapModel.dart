@@ -62,6 +62,7 @@ class MapModel {
       currency: json['currency'] ?? '',
       vehicle: json['vehicle'],
       createdAt: json['created_at'] ?? '',
+
     );
   }
 

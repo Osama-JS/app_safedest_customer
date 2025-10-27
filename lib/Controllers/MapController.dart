@@ -289,12 +289,12 @@ RxDouble currentZoom = 2.0.obs;
       if (clusterCount > 1) {
         // حالة التجميع
         iconImage = iniService.mapTargetIcon; // يجب توفيرها
-        annotationText = clusterCount.toString();
+        annotationText = ".$clusterCount";
         iconSize = 0.5;
       } else {
         // حالة علامة فردية
         iconImage = iniService.getIconForMainStatus(firstItem.mainStatus.value);
-        annotationText = '';
+        annotationText = markerId;
         iconSize = 0.3;
       }
 

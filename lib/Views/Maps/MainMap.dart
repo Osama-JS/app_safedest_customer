@@ -100,11 +100,15 @@ class _MainMap extends State<MainMap> {
     annotationManager!.tapEvents(
       onTap: (annotation) {
         print("Marker Tapped: ${annotation.textField}");
-        final index = mapController
-            .markersMap[annotation.textField]; // Mapbox يُنشئ ID تلقائي
-        if (index != null) {
-          mapController.tapedIndex.value = index;
-          mapController.showInfo.value = true;
+        try {
+          final index = mapController.markersMap[annotation
+              .textField]; // Mapbox يُنشئ ID تلقائي
+          if (index != null) {
+            mapController.tapedIndex.value = index;
+            mapController.showInfo.value = true;
+          }
+        }catch(e){
+          throw"error $e";
         }
         return true;
       },

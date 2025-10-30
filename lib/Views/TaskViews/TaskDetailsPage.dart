@@ -6,6 +6,7 @@ import '../../Globals/global_methods.dart' as global_methods;
 import '../../Widgets/TaskStatusStepper.dart';
 import '../../Widgets/TaskHistorySheet.dart';
 import 'AddTaskViews/ValidationOnePage.dart';
+import 'PaymentInputScreen.dart';
 
 class TaskDetailsPage extends StatefulWidget {
   final TaskModel task;
@@ -116,6 +117,18 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                 icon: const Icon(Icons.timeline, color: Colors.white),
                 tooltip: 'task_history'.tr,
               ),
+              if (task.status.value != "in_progress" &&
+                  task.status.value != "advertised" &&
+                  task.status.value != "canceled" &&
+                  task.status.value != "refound"
+              )
+              IconButton(
+                onPressed: () {
+                  Get.to(PaymentScreen(taskId: task.id.value,));
+                },
+                icon: const Icon(Icons.payment_outlined, color: Colors.white),
+                tooltip: 'task_history'.tr,
+              ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
@@ -169,7 +182,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 60),
+                          const SizedBox(height: 30),
                           // Status Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
@@ -204,7 +217,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                               ],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 5),
                           // Total Price
                           Column(
                             children: [
@@ -217,10 +230,10 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${task.id.value.toStringAsFixed(2)} ${'currency'.tr}',
+                                '${task.price.value.toStringAsFixed(2)} ${'currency'.tr}',
                                 style: const TextStyle(
                                   color: Colors.white,
-                                  fontSize: 28,
+                                  fontSize: 24,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

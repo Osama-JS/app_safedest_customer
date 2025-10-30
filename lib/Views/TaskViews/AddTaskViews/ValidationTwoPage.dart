@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+// import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../../Globals/MyColors.dart';
 import '../../../Globals/global_methods.dart' as global_methods;
 import '../../../Models/TaskModel.dart';
@@ -706,7 +706,8 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
       }
     }
 
-    return Obx(() => Column(
+    return
+      Obx(() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (imageUrl.value.isNotEmpty)

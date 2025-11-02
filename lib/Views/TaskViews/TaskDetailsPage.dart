@@ -483,11 +483,11 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                     ],
                   ),
                 ),
-                if (task.driver.phone.value.isNotEmpty)
-                  IconButton(
-                    onPressed: () => _callDriver(task.driver.phone.value),
-                    icon: const Icon(Icons.phone, color: Color(0xFFd40019)),
-                  ),
+                // if (task.driver.phone.value.isNotEmpty)
+                //   IconButton(
+                //     onPressed: () => _callDriver(task.driver.phone.value),
+                //     icon: const Icon(Icons.phone, color: Color(0xFFd40019)),
+                //   ),
               ],
             ),
           ],
@@ -564,12 +564,12 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
     );
   }
 
-  void _callDriver(String phone) {
-    // TODO: Implement phone call functionality
-    Get.snackbar(
-      'info'.tr,
-      'calling'.trParams({'phone': phone}),
-      snackPosition: SnackPosition.BOTTOM,
-    );
-  }
+  // void _callDriver(String phone) {
+  //   // TODO: Implement phone call functionality
+  //   Get.snackbar(
+  //     'info'.tr,
+  //     'calling'.trParams({'phone': phone}),
+  //     snackPosition: SnackPosition.BOTTOM,
+  //   );
+  // }
 }

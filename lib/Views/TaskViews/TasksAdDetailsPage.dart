@@ -46,7 +46,6 @@ class _TasksAdDetailsPageState extends State<TasksAdDetailsPage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     loadInitialData();
   }

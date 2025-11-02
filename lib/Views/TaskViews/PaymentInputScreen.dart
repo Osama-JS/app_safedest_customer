@@ -136,16 +136,16 @@ class PaymentScreen extends StatelessWidget {
                       activeColor: MyColors.primaryColor,
                     ),
                   ),
-                  //TODO OSAMA HERE IS WALLET
-                  // Expanded(
-                  //   child: RadioListTile<String>(
-                  //     title: const Text('محفظة'),
-                  //     value: 'wallet',
-                  //     groupValue: controller.paymentMethod.value,
-                  //     onChanged: (val) => controller.setPaymentMethod(val!),
-                  //     activeColor: Colors.green,
-                  //   ),
-                  // ),
+
+                  Expanded(
+                    child: RadioListTile<String>(
+                      title: const Text('محفظة'),
+                      value: 'wallet',
+                      groupValue: controller.paymentMethod.value,
+                      onChanged: (val) => controller.setPaymentMethod(val!),
+                      activeColor: Colors.green,
+                    ),
+                  ),
                 ],
               )),
 

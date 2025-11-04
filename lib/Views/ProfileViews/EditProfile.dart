@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart' hide MultipartFile, FormData;
 import '../../../Globals/MyColors.dart';
 import '../../../shared_prff.dart';
@@ -53,7 +52,7 @@ class _EditProfileState extends State<EditProfile> {
       form.save();
       if (!await global_methods.isInternetAvailable()) {
         global_methods.errorView(
-            context, 'checkInternetConnection'.tr);
+            context, 'check_internet'.tr);
       } else {
         global_methods.showDialogLoading(context: context);
 
@@ -87,9 +86,9 @@ class _EditProfileState extends State<EditProfile> {
           }
         }catch (e) {
           global_methods.hideLoadingDialog();
-          global_methods.sendError("UpdateProfile : $e");
+          global_methods.sendError("${'update_profile'.tr} : $e");
 
-          Get.snackbar("error".tr, "somethingWentWrong".tr);
+          Get.snackbar("error".tr, "something_wrong".tr);
 
           // Get.snackbar("error".tr, e.toString() );
 
@@ -249,7 +248,7 @@ class _EditProfileState extends State<EditProfile> {
 
                       Obx(()=> PhoneInputField2(
                         controller: phoneController,
-                        label: "phone".tr,
+                        label: "phone_number".tr,
                         selectedCountryCode: selectedPhoneCode.value,
                         countryCodes: phoneCodes ?? [],
                         onCountryCodeChanged: (value) {
@@ -303,7 +302,7 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                           ),
                           labelStyle: global_methods.textInput(),
-                          labelText: 'companyName'.tr,
+                          labelText: 'company_name'.tr,
                         ),
                       ),
                       const SizedBox(height: 10),
@@ -340,7 +339,7 @@ class _EditProfileState extends State<EditProfile> {
                             ),
                           ),
                           labelStyle: global_methods.textInput(),
-                          labelText: 'companyAddress'.tr,
+                          labelText: 'company_address'.tr,
                         ),
                       ),
 
@@ -432,7 +431,7 @@ class _EditProfileState extends State<EditProfile> {
 
       if (!await global_methods.isInternetAvailable()) {
         global_methods.errorView(
-            context, 'checkInternetConnection'.tr);
+            context, 'check_internet'.tr);
       } else {
         isUploading.value=true;
 
@@ -466,7 +465,7 @@ class _EditProfileState extends State<EditProfile> {
           global_methods.sendError("UpdateProfile : $e");
 
           // Get.snackbar("error".tr, e.toString());
-          Get.snackbar("error".tr, "somethingWentWrong".tr);
+          Get.snackbar("error".tr, "something_wrong".tr);
 
 
         }

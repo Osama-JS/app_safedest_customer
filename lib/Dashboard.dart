@@ -1,23 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'Globals/MyColors.dart';
 import 'theme/app_theme.dart';
 import 'theme/app_decorations.dart';
-
 import 'Globals/global.dart' as globals;
-
 import 'package:get/get.dart';
-
 import 'Services/InitialService.dart';
-import 'Views/Home.dart';
 import 'Views/Maps/MainMap.dart';
 import 'Views/ProfileViews/ProfileScreen.dart';
 import 'Views/TaskViews/TasksPage.dart';
 import 'Views/WalletViews/WalletScreen.dart';
 
 class Dashboard extends StatefulWidget {
-  Dashboard({super.key});
+  const Dashboard({super.key});
 
   @override
   State<Dashboard> createState() => _Dashboard();
@@ -57,6 +52,7 @@ class _Dashboard extends State<Dashboard> with WidgetsBindingObserver {
         globals.user["data"]["customer"]["image"] ?? "";
   }
 
+  @override
   @mustCallSuper
   @protected
   void dispose() {

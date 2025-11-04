@@ -57,7 +57,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
                 const SizedBox(height: 20),
 
                 Text(
-                  'sureLogout'.tr,
+                  'confirm_logout'.tr,
                   style: TextStyle(fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
@@ -102,7 +102,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
 
   logout() async {
     if (!await global_methods.isInternetAvailable()) {
-      global_methods.errorView(context, 'checkInternetConnection'.tr);
+      global_methods.errorView(context, 'check_internet'.tr);
     } else {
       global_methods.showDialogLoading(context: context);
 
@@ -123,7 +123,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
         global_methods.hideLoadingDialog();
 
         // Get.snackbar("error".tr, e.toString());
-        Get.snackbar("error".tr, "somethingWentWrong".tr);
+        Get.snackbar("error".tr, "something_wrong".tr);
         print(e.toString());
       }
     }
@@ -228,10 +228,10 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
               ),
               const SizedBox(height: 24),
 
-              _buildSettingsItem(Icons.person, 'editProfile'.tr, () {
+              _buildSettingsItem(Icons.person, 'edit_profile'.tr, () {
                 Get.to(EditProfile());
               }),
-              _buildSettingsItem(Icons.password, 'changePassword'.tr, () {
+              _buildSettingsItem(Icons.password, 'change_password'.tr, () {
                 Get.to(ChangePassword());
               }),
 
@@ -322,7 +322,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
               // _buildSettingsItem(Icons.help, 'helpCenter'.tr, () {
               //   Get.to(HelpCenterPage());
               // }),
-              _buildSettingsItem(Icons.shield, 'privacyPolicy'.tr, () async {
+              _buildSettingsItem(Icons.shield, 'privacy_policy'.tr, () async {
                 // final Uri _url = Uri.parse("https://www.nawaam.com/Home/Privacy");
                 // if (!await launchUrl(_url)) {
                 //   throw Exception('Could not launch $_url');
@@ -352,7 +352,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
           fit: BoxFit.cover,
         ),
       ),
-      title: Text(languageCode == "ar" ? "arabic".tr : "English"),
+      title: Text(languageCode == "ar" ? "عربي" : "English"),
       trailing: selectedLanguage.value == languageCode
           ? const Icon(Icons.check, color: Colors.green)
           : null,

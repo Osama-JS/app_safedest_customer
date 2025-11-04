@@ -419,7 +419,7 @@ class _MainMap extends State<MainMap> {
             // --- موقع الاستلام (Pickup) ---
             _buildLocationSection(
               icon: Icons.location_on_outlined,
-              title: 'موقع الاستلام',
+              title: 'pickup_location'.tr,
               address: mapController
                   .dataList[mapController.tapedIndex.value]
                   .pickupAddress
@@ -430,7 +430,7 @@ class _MainMap extends State<MainMap> {
             // --- موقع التسليم (Delivery) ---
             _buildLocationSection(
               icon: Icons.delivery_dining_outlined,
-              title: 'موقع التسليم',
+              title: 'delivery_location'.tr,
               address: mapController
                   .dataList[mapController.tapedIndex.value]
                   .deliveryAddress
@@ -443,8 +443,8 @@ class _MainMap extends State<MainMap> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'بيانات السائق',
+                  Text(
+                    'driver_info'.tr,
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
@@ -518,7 +518,7 @@ class _MainMap extends State<MainMap> {
                     .isNotEmpty)
               Text.rich(
                 TextSpan(
-                  text: 'المركبة: ',
+                  text: "${'vehicle'.tr}: ",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                   children: [
                     TextSpan(
@@ -534,7 +534,7 @@ class _MainMap extends State<MainMap> {
 
             // --- تاريخ الإنشاء ---
             Text(
-              'أنشئت في: ${GM.formatDateTime(mapController.dataList[mapController.tapedIndex.value].createdAt.value)}',
+              '${'created_at'.tr}: ${GM.formatDateTime(mapController.dataList[mapController.tapedIndex.value].createdAt.value)}',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
@@ -679,7 +679,7 @@ class _MainMap extends State<MainMap> {
                       // --- موقع الاستلام (Pickup) ---
                       _buildLocationSection(
                         icon: Icons.location_on_outlined,
-                        title: 'موقع الاستلام',
+                        title: 'pickup_location'.tr,
                         address: item.pickupAddress.value,
                       ),
                       const SizedBox(height: 12),
@@ -687,7 +687,7 @@ class _MainMap extends State<MainMap> {
                       // --- موقع التسليم (Delivery) ---
                       _buildLocationSection(
                         icon: Icons.delivery_dining_outlined,
-                        title: 'موقع التسليم',
+                        title: 'delivery_location'.tr,
                         address: item.deliveryAddress.value,
                       ),
                       const SizedBox(height: 12),
@@ -697,8 +697,8 @@ class _MainMap extends State<MainMap> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'بيانات السائق',
+                            Text(
+                              'driver_info'.tr,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 6),
@@ -750,7 +750,7 @@ class _MainMap extends State<MainMap> {
                       if (item.vehicle != null && item.vehicle!.isNotEmpty)
                         Text.rich(
                           TextSpan(
-                            text: 'المركبة: ',
+                            text: ' ${'vehicle'.tr}: ',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                             children: [
                               TextSpan(
@@ -765,7 +765,7 @@ class _MainMap extends State<MainMap> {
 
                       // --- تاريخ الإنشاء ---
                       Text(
-                        'أنشئت في: ${GM.formatDateTime(item.createdAt.value)}',
+                        '${'created_at'.tr}: ${GM.formatDateTime(item.createdAt.value)}',
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.grey,

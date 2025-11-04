@@ -5,19 +5,20 @@ import 'Dashboard.dart';
 import 'Globals/MyColors.dart';
 import 'Helpers/Users.dart';
 import 'Views/Users/Login.dart';
-import 'Views/Widgets/ProgressWithIcon.dart';
 import 'shared_prff.dart';
 import 'Globals/global_methods.dart' as global_methods;
 import 'Globals/global.dart' as globals;
 import 'package:get/get.dart';
 
 class Splash extends StatefulWidget {
+  const Splash({super.key});
+
   @override
   State<StatefulWidget> createState() => SplashState();
 }
 
 class SplashState extends State<Splash> with SingleTickerProviderStateMixin {
-  User_Helper user = new User_Helper();
+  User_Helper user = User_Helper();
   FirebaseMessaging messaging = FirebaseMessaging.instance;
 
   late AnimationController _animationController;

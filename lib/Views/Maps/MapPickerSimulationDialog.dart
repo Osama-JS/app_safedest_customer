@@ -28,7 +28,7 @@ class MapPickerSimulationDialog extends StatefulWidget {
 class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
   double selectedLat = 0.0;
   double selectedLng = 0.0;
-  String selectedAddress = "لم يتم تحديد الموقع بعد";
+  String selectedAddress = "location_not_set".tr;
   final iniService = InitialService.to;
 
 
@@ -47,7 +47,7 @@ class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
     if (widget.initialLat != null && widget.initialLng != null) {
       selectedLat = widget.initialLat!;
       selectedLng = widget.initialLng!;
-      selectedAddress = "الموقع المحدد مسبقًا";
+      selectedAddress = "default_location".tr;
     }
 
 
@@ -127,7 +127,7 @@ class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
   Widget build(BuildContext context) {
 
     return AlertDialog(
-      title: Text(widget.isPickup ? "تحديد موقع الاستلام من الخريطة" : "تحديد موقع التسليم من الخريطة"),
+      title: Text(widget.isPickup ? "set_pickup_from_map".tr : "set_delivery_from_map".tr),
       contentPadding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
       content: Container(
         width: MediaQuery.of(context).size.width * 0.8,
@@ -167,7 +167,7 @@ class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
       actions: [
         TextButton(
           onPressed: () => Get.back(),
-          child: const Text("إلغاء", style: TextStyle(color: Colors.grey)),
+          child: Text("cancel".tr, style: TextStyle(color: Colors.grey)),
         ),
         ElevatedButton(
           onPressed: () {
@@ -179,7 +179,7 @@ class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
                 'address': selectedAddress,
               });
             }else{
-              Get.snackbar("error".tr, "قم بتحديد الموقع اولا", snackPosition: SnackPosition.BOTTOM);
+              Get.snackbar("error".tr, "set_location_first".tr, snackPosition: SnackPosition.BOTTOM);
             }
 
 
@@ -187,7 +187,7 @@ class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: MyColors.primaryColor,
           ),
-          child: const Text("تأكيد الموقع", style: TextStyle(color: Colors.white)),
+          child: Text("confirm_location".tr, style: TextStyle(color: Colors.white)),
         ),
       ],
     );

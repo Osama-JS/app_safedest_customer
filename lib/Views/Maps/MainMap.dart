@@ -49,7 +49,7 @@ class _MainMap extends State<MainMap> {
 
   // استخدام البنية الصحيحة لـ Point
   Point iniLocation = Point(
-    coordinates: Position(39.8262, 21.4225),
+    coordinates: Position(45, 25),
   ); // (Lng, Lat)
 
   CameraOptions? _initialCameraOptions;
@@ -69,7 +69,7 @@ class _MainMap extends State<MainMap> {
 
     _initialCameraOptions = CameraOptions(
       center: iniLocation,
-      zoom: 2.0,
+      zoom: 4.0,
       // pitch: 0
     );
 
@@ -101,11 +101,38 @@ class _MainMap extends State<MainMap> {
       onTap: (annotation) {
         print("Marker Tapped: ${annotation.textField}");
         try {
-          final index = mapController.markersMap[annotation
-              .textField]; // Mapbox يُنشئ ID تلقائي
-          if (index != null) {
-            mapController.tapedIndex.value = index;
-            mapController.showInfo.value = true;
+
+          final ids = mapController.markersMap[annotation.textField];
+          if (ids != null) {
+
+            if(ids.contains(",")){
+
+              final List<String> stringList = ids.split(',');
+
+              final List<int> idsList = stringList
+                  .map((e) => int.tryParse(e.trim()) ?? 0)
+                  .toList();
+
+              List<int>indexes = [];
+
+              for(int id in idsList){
+                int index = mapController.dataList.indexWhere((e)=>e.id.value==id);
+                indexes.add(index);
+
+              }
+              mapController.tapedIndexes.value = indexes;
+              mapController.showMInfo.value = true;
+              mapController.showInfo.value = false;
+
+
+            }else{
+              int index = mapController.dataList.indexWhere((e)=>e.id.value==int.parse(ids));
+              mapController.tapedIndex.value = index;
+              mapController.showInfo.value = true;
+              mapController.showMInfo.value = false;
+            }
+
+
           }
         }catch(e){
           throw"error $e";
@@ -257,7 +284,8 @@ class _MainMap extends State<MainMap> {
                         height: double.infinity,
                         width: double.infinity,
                         child: MapWidget(
-                          styleUri: MapboxStyles.MAPBOX_STREETS,
+                          // styleUri: MapboxStyles.MAPBOX_STREETS,
+                          styleUri: "mapbox://styles/osama1998/cma8lcv6p00ha01s58rdb73zw",
                           cameraOptions: _initialCameraOptions,
 
                           onMapCreated: _onMapCreated,
@@ -266,6 +294,7 @@ class _MainMap extends State<MainMap> {
 
                           onTapListener: (point) {
                             mapController.showInfo.value = false;
+                            mapController.showMInfo.value = false;
                             FocusScope.of(context).unfocus();
                             searchQuery.value = '';
                             searchResults.clear();
@@ -310,6 +339,17 @@ class _MainMap extends State<MainMap> {
                           child: Container(
                             // height: 290,
                             child: _buildInfo(context),
+                          ),
+                        ),
+
+                      if (mapController.showMInfo.value)
+                        Positioned(
+                          bottom: 20,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            // height: 290,
+                            child: _buildMInfo(context),
                           ),
                         ),
                     ],
@@ -543,6 +583,174 @@ class _MainMap extends State<MainMap> {
     );
   }
 
+  Widget _buildMInfo(BuildContext context) {
+    // استخدام Obx لمراقبة التغييرات في tapedIndexes
+    return Obx(() {
+      // التحقق من وجود فهارس مختارة
+      if (mapController.tapedIndexes.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return ListView.builder(
+        // تحديد ارتفاع مناسب للـ ListView إذا كان في سياق يتقيد بارتفاع (مثل BottomSheet)
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: mapController.tapedIndexes.length,
+        itemBuilder: (context, index) {
+          // استخراج الفهرس الحقيقي من قائمة الفهارس المختارة
+          final int dataIndex = mapController.tapedIndexes[index];
+
+          // استخراج بيانات المهمة الحالية
+          final currentTask = mapController.dataList[dataIndex];
+
+          bool hasDriver =
+              currentTask.driverName != null && currentTask.driverName!.isNotEmpty;
+
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // --- رقم المهمة والحالة ---
+                  Row(
+                    children: [
+                      Text(
+                        '#${currentTask.id.value}',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withAlpha(30),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          currentTask.status.value,
+                          style: const TextStyle(
+                            color: Colors.blue,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- السعر والعملة ---
+                  Text(
+                    '${currentTask.price.value.toStringAsFixed(2)} ${currentTask.currency.value}',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.green,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- موقع الاستلام (Pickup) ---
+                  _buildLocationSection(
+                    icon: Icons.location_on_outlined,
+                    title: 'موقع الاستلام',
+                    address: currentTask.pickupAddress.value,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- موقع التسليم (Delivery) ---
+                  _buildLocationSection(
+                    icon: Icons.delivery_dining_outlined,
+                    title: 'موقع التسليم',
+                    address: currentTask.deliveryAddress.value,
+                  ),
+                  const SizedBox(height: 12),
+
+                  // --- بيانات السائق (إن وُجد) ---
+                  if (hasDriver)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'بيانات السائق',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            if (currentTask.driverImage != null &&
+                                currentTask.driverImage!.isNotEmpty)
+                              ClipOval(
+                                child: Image.network(
+                                  currentTask.driverImage!.value,
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) =>
+                                  const CircleAvatar(child: Icon(Icons.person)),
+                                ),
+                              )
+                            else
+                              const CircleAvatar(child: Icon(Icons.person)),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  currentTask.driverName!.value,
+                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                if (currentTask.driverPhone != null &&
+                                    currentTask.driverPhone!.isNotEmpty)
+                                  Text(
+                                    currentTask.driverPhone!.value,
+                                    style: const TextStyle(color: Colors.grey),
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                    ),
+
+                  // --- نوع المركبة (إن وُجد) ---
+                  if (currentTask.vehicle != null && currentTask.vehicle!.isNotEmpty)
+                    Text.rich(
+                      TextSpan(
+                        text: 'المركبة: ',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        children: [
+                          TextSpan(
+                            text: currentTask.vehicle!.value,
+                            style: const TextStyle(fontWeight: FontWeight.normal),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                  // --- تاريخ الإنشاء ---
+                  Text(
+                    'أنشئت في: ${GM.formatDateTime(currentTask.createdAt.value)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    });
+  }
   Widget mapSearchWidget() {
     return Container(
       margin: const EdgeInsets.all(AppTheme.spacing4),

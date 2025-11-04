@@ -48,11 +48,11 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           _taskHistory = [];
           _isLoading = false;
         });
-        Get.snackbar(
-          'error'.tr,
-          result["message"] ?? 'failed_to_load_task_details'.tr,
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        // Get.snackbar(
+        //   'error'.tr,
+        //   result["message"] ?? 'failed_to_load_task_details'.tr,
+        //   snackPosition: SnackPosition.BOTTOM,
+        // );
       }
     } catch (e) {
       setState(() {
@@ -229,6 +229,19 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                                 ),
                               ),
                               const SizedBox(height: 4),
+                              if (task.status.value == 'advertised' &&
+                                  task.ad.value != null &&
+                                  task.ad.value!.min > 0 &&
+                                  task.ad.value!.max > 0)
+                              Text(
+                                '${task.ad.value!.min.toStringAsFixed(2)} - ${task.ad.value!.max.toStringAsFixed(2)} ${'currency'.tr}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                                else
                               Text(
                                 '${task.price.value.toStringAsFixed(2)} ${'currency'.tr}',
                                 style: const TextStyle(

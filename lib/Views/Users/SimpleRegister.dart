@@ -228,6 +228,15 @@ class _SimpleRegisterState extends State<SimpleRegister>
   }
 
   void _nextStep() {
+    if (!formState.currentState!.validate()) {
+      Get.snackbar(
+        "error_title".tr,
+        "fill_all_required_fields".tr,
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+    formState.currentState!.save();
     if (_currentStep < 2) {
       _tabController.animateTo(_currentStep + 1);
     }
@@ -660,7 +669,8 @@ class _SimpleRegisterState extends State<SimpleRegister>
 
         // Phone Field
         Obx(
-          () => PhoneInputField(
+          () => PhoneInputField2(
+            controller: phoneController,
             label: "phone".tr,
             selectedCountryCode: selectedPhoneCode.value,
             countryCodes: phoneCodes,
@@ -674,9 +684,9 @@ class _SimpleRegisterState extends State<SimpleRegister>
               }
               return null;
             },
-            onSaved: (value) {
-              phoneController.text = value!.trim();
-            },
+            // onSaved: (value) {
+            //   phoneController.text = value!.trim();
+            // },
           ),
         ),
 

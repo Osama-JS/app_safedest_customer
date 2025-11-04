@@ -400,7 +400,7 @@ class User_Helper {
     return data;
   }
   logout(var token)async{
-    var url = Uri.parse(globals.public_uri+'logoutcode');
+    var url = Uri.parse(globals.public_uri+'logout');
     var response = await http.post(url, headers: {
       "Accept": "application/json",
       "Accept-Language": global_methods.getLanguage(),

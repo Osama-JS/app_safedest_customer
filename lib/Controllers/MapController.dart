@@ -46,10 +46,13 @@ class MapController extends GetxController {
   // استخدام Point من Mapbox للإحداثيات
   RxList<Point> positions = <Point>[].obs;
   final markersMap =
-      <String, int>{}.obs; // لتخزين العلاقة بين markerId والـ index
+      <String, String>{}.obs; // لتخزين العلاقة بين markerId والـ index
 
   RxInt tapedIndex = 0.obs;
   RxBool showInfo = false.obs;
+
+  RxList<int> tapedIndexes = <int>[].obs;
+  RxBool showMInfo = false.obs;
 
   // لحفظ معرفات العلامات التي تم إنشاؤها على الخريطة لتحديثها
   final RxList<String> createdAnnotationIds = <String>[].obs;
@@ -280,37 +283,55 @@ RxDouble currentZoom = 2.0.obs;
       Point point = Point(coordinates: positionCoordinates);
 
 
-      final String markerId = clusterCount > 1 ? 'Cluster_${index}' : '${firstItem.id.value}';
+      // final String markerId = clusterCount > 1 ? 'Cluster_${index}' : '${firstItem.id.value}';
+       String markerId = "";
 
       Uint8List iconImage;
       String annotationText;
       double iconSize;
 
       if (clusterCount > 1) {
+
+        for(var item in clusterItems){
+          if(markerId!=""){
+            markerId+=",${item.id.value}";
+          }else{
+            markerId+="${item.id.value}";
+          }
+        }
+        markersMap[markerId] = markerId;
+
         // حالة التجميع
         iconImage = iniService.mapTargetIcon; // يجب توفيرها
-        annotationText = ".$clusterCount";
+        // annotationText = ".$clusterCount";
+        annotationText = markerId;
         iconSize = 0.5;
       } else {
         // حالة علامة فردية
+        markerId ="${firstItem.id.value}";
+
+        markersMap[markerId] = markerId;
+
+
         iconImage = iniService.getIconForMainStatus(firstItem.mainStatus.value);
         annotationText = markerId;
         iconSize = 0.3;
+
       }
 
-      markersMap[markerId] = index;
       // Point point = Point.fromLngLat(lng, lat);
       positions.add(point);
 
       mapMarkersOptions.add(
         PointAnnotationOptions(
           textField: annotationText,
-          textHaloColor: Colors.white.value,
+          // textHaloColor: Colors.white.value,
           textHaloWidth: 1.5,
           textSize: 14.0,
-          textColor: clusterCount > 1 ? Colors.black.value : Colors.transparent.value,
+          // textColor: clusterCount > 1 ? Colors.black.value : Colors.transparent.value,
+          textColor:  Colors.transparent.value,
           geometry: point,
-          iconSize: iconSize,
+          iconSize: 0.3,//iconSize,
           iconOffset: [0.0, -17.0],
           symbolSortKey: index.toDouble(),
           image: iconImage,

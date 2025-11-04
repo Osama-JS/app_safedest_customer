@@ -109,7 +109,7 @@ class _ProfileScreenPageState extends State<ProfileScreenPage>
       try {
         var data = await helperData.logout(Token_pref.getToken());
         global_methods.hideLoadingDialog();
-        if (data["status"] == 200) {
+        if (data["success"] == 200) {
           Get.snackbar("success".tr, data["message"]);
           Token_pref.setToken("");
           User_pref.setUser("");

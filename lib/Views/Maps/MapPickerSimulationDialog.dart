@@ -51,12 +51,12 @@ class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
     }
 
 
-    final double lat = selectedLat != 0.0 ? selectedLat : 21.4225;
-    final double lng = selectedLng != 0.0 ? selectedLng : 39.8262;
+    final double lat = selectedLat != 0.0 ? selectedLat : 25;
+    final double lng = selectedLng != 0.0 ? selectedLng : 45;
 
     _initialCameraOptions = CameraOptions(
       center: Point(coordinates: Position(lng, lat)),
-      zoom: 14.0,
+      zoom: 4.0,
     );
   }
 
@@ -139,7 +139,9 @@ class _MapPickerSimulationDialogState extends State<MapPickerSimulationDialog> {
                 height: double.infinity,
                 width: double.infinity,
                 child: MapWidget(
-                  styleUri: MapboxStyles.MAPBOX_STREETS,
+                  // styleUri: MapboxStyles.MAPBOX_STREETS,
+                  styleUri: "mapbox://styles/osama1998/cma8lcv6p00ha01s58rdb73zw",
+
                   cameraOptions: _initialCameraOptions,
 
                   onMapCreated: _onMapCreated,

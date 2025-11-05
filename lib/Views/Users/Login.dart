@@ -410,7 +410,7 @@ class _LoginState extends State<Login> {
         const SizedBox(height: 20),
 
         Text(
-          'versionNumber'.tr + ' 1.0.0',
+          '${'versionNumber'.tr} 1.0.0',
           style: AppTheme.bodySmall.copyWith(color: MyColors.neutral400),
         ),
       ],

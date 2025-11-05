@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import '../../../Globals/MyColors.dart';
 import '../../../Globals/global_methods.dart' as global_methods;
 import '../../../Models/TaskModel.dart';
@@ -26,10 +25,10 @@ class PricingParam {
     if (type == 'points') {
       return PricingParam(
         id: json['from_point']['id'] ?? 0,
-        name: '${json['from_point']['name'] ?? 'N/A'} - ${json['to_point']['name'] ?? 'N/A'} (السعر: ${json['price'] ?? 0})',
+        name: '${json['from_point']['name'] ?? 'N/A'} - ${json['to_point']['name'] ?? 'N/A'} (${'price'.tr}: ${json['price'] ?? 0})',
       );
     }
-    return PricingParam(id: json['param'] ?? 0, name: 'Default Parameter');
+    return PricingParam(id: json['param'] ?? 0, name: 'Default Parameter'.tr);
   }
 }
 
@@ -141,7 +140,8 @@ class ValidationTwoController extends GetxController {
       pricingMethods.value = dataJson
           .map((item) => PricingMethodModel.fromJson(item))
           .toList();
-      pricingMethods.add(PricingMethodModel(id: 0,name: "ضع سعرك",type: "handed",params: []));
+      pricingMethods.add(PricingMethodModel(id: 0,name: "setYourPrice".tr,type: "handed",params: []));
+
       if (isEditMode.value && taskModelForEdit.value != null) {
         loadTaskDataForEdit(taskModelForEdit.value!);
       } else {
@@ -153,7 +153,7 @@ class ValidationTwoController extends GetxController {
         }
       }
     } catch (e) {
-      Get.snackbar("خطأ تهيئة", "فشل تحليل بيانات التسعير: $e", backgroundColor: Colors.red);
+      Get.snackbar('initializationError'.tr, 'pricingDataError'.tr + ": $e", backgroundColor: Colors.red);
       print("Error initializing pricing data: $e");
     }
   }
@@ -165,8 +165,7 @@ class ValidationTwoController extends GetxController {
     pickupLatitude.value = task.pickup.lat.value;
     pickupLongitude.value = task.pickup.lng.value;
     pickupImage.value = task.pickup.image.value;
-    print("dddddddd"+pickupLatitude.value.toString());
-    print("dddddddd"+pickupLongitude.value.toString());
+
     if (task.pickup.scheduledTime.isNotEmpty) {
       pickupBeforeDate.value = DateTime.tryParse(task.pickup.scheduledTime.value.split(' ')[0]);
     }
@@ -178,6 +177,7 @@ class ValidationTwoController extends GetxController {
     deliveryLatitude.value = task.delivery.lat.value;
     deliveryLongitude.value = task.delivery.lng.value;
     deliveryImage.value = task.delivery.image.value;
+
     if (task.delivery.scheduledTime.isNotEmpty) {
       deliveryBeforeDate.value = DateTime.tryParse(task.delivery.scheduledTime.value.split(' ')[0]);
     }
@@ -193,18 +193,18 @@ class ValidationTwoController extends GetxController {
 
   Map<String, dynamic> generatePayload() {
     if (!formKey.currentState!.validate()) {
-      Get.snackbar("خطأ", "يرجى ملء جميع حقول العناوين والتواريخ المطلوبة.", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('error'.tr, 'fillAddressDateFields'.tr, snackPosition: SnackPosition.BOTTOM);
       return {};
     }
 
     final selectedMethod = selectedPricingMethod.value;
     if (selectedMethod == null) {
-      Get.snackbar("خطأ", "يجب اختيار طريقة تسعير.", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('error'.tr, 'selectPricingMethod'.tr, snackPosition: SnackPosition.BOTTOM);
       return {};
     }
 
     if (selectedMethod.type == 'points' && selectedPricingParam.value == null) {
-      Get.snackbar("خطأ", "يجب اختيار نقطة انطلاق ووصول للتسعير.", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('error'.tr, 'selectStartEndPoint'.tr, snackPosition: SnackPosition.BOTTOM);
       return {};
     }
 
@@ -239,10 +239,10 @@ class ValidationTwoController extends GetxController {
       "conditions": conditionsController.text,
 
       if(pickupImage.value!=''&&!pickupImage.value.startsWith("http"))
-      "pickup_image":pickupImage.value,
+        "pickup_image":pickupImage.value,
 
       if(deliveryImage.value!=''&&!deliveryImage.value.startsWith("http"))
-      "delivery_image":deliveryImage.value,
+        "delivery_image":deliveryImage.value,
 
     };
 
@@ -278,12 +278,12 @@ class ValidationTwoController extends GetxController {
         pickupLatitude.value = lat;
         pickupLongitude.value = lon;
         pickupAddress.value = address;
-        Get.snackbar("اختيار الموقع", "تم تحديد موقع الاستلام: ${address}");
+        Get.snackbar('locationSelection'.tr, '${'pickupLocationSet'.tr}: ${address}');
       } else {
         deliveryLatitude.value = lat;
         deliveryLongitude.value = lon;
         deliveryAddress.value = address;
-        Get.snackbar("اختيار الموقع", "تم تحديد موقع التسليم: ${address}");
+        Get.snackbar('locationSelection'.tr, '${'deliveryLocationSet'.tr}: ${address}');
       }
     }
   }
@@ -339,9 +339,11 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
 
     request.fields['template'] = payload['template'].toString();
     request.fields['vehicles'] = jsonEncode(payload['vehicles']);
+
     if(controller.isEditMode.value){
       request.fields['id'] = widget.taskIdForEdit.toString();
     }
+
     final Map<String, dynamic> additionalFields = payload['additional_fields'];
     Map<String, dynamic> textAndUrlFields = {};
 
@@ -368,12 +370,12 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
         textAndUrlFields[key] = value.toString();
       }
     }
+
     if (textAndUrlFields.isNotEmpty) {
       textAndUrlFields.forEach((key, value) {
         request.fields['additional_fields[$key]'] = value.toString();
       });
     }
-
 
     for (var key in payload2.keys) {
       if(key.contains("email")){
@@ -381,11 +383,7 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
           request.fields[key] = payload2[key].toString();
         }
       }
-
-
       else if(key.contains("image")){
-
-
         String imageValue = payload2[key].toString();
 
         if (imageValue.isNotEmpty && !imageValue.startsWith('http')) {
@@ -399,20 +397,10 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
             request.files.add(multipartFile);
           }
         }
-
-
       }
-
       else {
         request.fields[key] = payload2[key].toString();
       }
-    }
-
-    for(var f in request.files){
-      print("saeeeeeeeeeeeeeeeeedddddddddd file : ${f.field}");
-
-      print("saeeeeeeeeeeeeeeeeedddddddddd file : ${f.filename}");
-
     }
 
     try {
@@ -421,26 +409,31 @@ class _ValidationTwoPageState extends State<ValidationTwoPage> {
       var data = jsonDecode(response.body);
 
       global_methods.hideLoadingDialog();
-print("saeeeeeeeeeeeeeeeeedddddddddd$data");
-      if (data["status"] == 200 ) {
-        Get.snackbar("نجاح", "تم التحقق بنجاح", snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
-        globals.stepTowPayload = payload2;
-        if(controller.isEditMode.value){
-          Get.to(() => AddTaskPage(stepTwoResponse: response,taskModelForEdit: widget.taskModelForEdit,priceMethodId: controller.selectedPricingMethod.value!.id,));
 
-        }else{
-          Get.to(() => AddTaskPage(stepTwoResponse: response,priceMethodId: controller.selectedPricingMethod.value!.id));
+      if (data["status"] == 200 ) {
+        Get.snackbar('success'.tr, 'validationSuccess'.tr, snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
+        globals.stepTowPayload = payload2;
+
+        if(controller.isEditMode.value){
+          Get.to(() => AddTaskPage(
+            stepTwoResponse: response,
+            taskModelForEdit: widget.taskModelForEdit,
+            priceMethodId: controller.selectedPricingMethod.value!.id,
+          ));
+        } else {
+          Get.to(() => AddTaskPage(
+              stepTwoResponse: response,
+              priceMethodId: controller.selectedPricingMethod.value!.id
+          ));
         }
       } else {
-        Get.snackbar("خطأ في API", "فشل الإرسال. الاستجابة: ${data["message"] ?? 'Unknown error'}",
+        Get.snackbar('apiError'.tr, '${'sendFailed'.tr}: ${data["message"] ?? 'Unknown error'}',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.shade600,
             colorText: Colors.white);
       }
     } catch (e) {
-      print("saeeeeeeeeeeeeeeeeedddddddddd$e");
-
-      Get.snackbar("خطأ الإرسال", "حدث خطأ أثناء الاتصال بالخادم: $e",
+      Get.snackbar('sendError'.tr, '${'connectionError'.tr}: $e',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade600,
           colorText: Colors.white);
@@ -452,7 +445,7 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(controller.isEditMode.value ? "تعديل: العناوين والتسعير" : "الخطوة 2: العناوين والتسعير"),
+        title: Text(controller.isEditMode.value ? 'editAddressesAndPricing'.tr : 'step2AddressesAndPricing'.tr),
         backgroundColor: MyColors.appBarColor,
       ),
       body: Form(
@@ -476,15 +469,15 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
                 onPressed: () async {
                   final payload = controller.generatePayload();
                   if (payload.isNotEmpty) {
-                    print("Step 2 Payload: ${payload}");
                     await sendStepTwoPayload(context, payload, Token_pref.getToken()!);
                   }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: MyColors.primaryColor,
+                  minimumSize: const Size(double.infinity, 50),
                 ),
                 child: Text(
-                    controller.isEditMode.value ? "تعديل وحفظ العناوين" : "المتابعة لإرسال المهمة",
+                    controller.isEditMode.value ? 'editAndSaveAddresses'.tr : 'continueToSendTask'.tr,
                     style: const TextStyle(color: Colors.white)
                 ),
               ),
@@ -498,7 +491,7 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
   Widget _buildPricingSection() {
     return Obx(() {
       if (controller.pricingMethods.isEmpty) {
-        return const Center(child: Text("لا تتوفر طرق تسعير."));
+        return Center(child: Text('noPricingMethods'.tr));
       }
 
       final methods = controller.pricingMethods.toList();
@@ -507,10 +500,10 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("1. اختيار طريقة التسعير", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('pricingMethodSelection'.tr, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(),
           _buildDropdown<PricingMethodModel>(
-            title: "طريقة التسعير",
+            title: 'pricingMethod'.tr,
             value: selectedMethod,
             items: methods.map((m) => DropdownMenuItem(value: m, child: Text(m.name))).toList(),
             onChanged: (newMethod) {
@@ -527,7 +520,7 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
 
           if (selectedMethod?.type == 'points' && selectedMethod!.params.isNotEmpty)
             _buildDropdown<PricingParam>(
-              title: "نقطة الانطلاق والوصول",
+              title: 'startEndPoint'.tr,
               value: controller.selectedPricingParam.value,
               items: selectedMethod.params.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
               onChanged: (newParam) {
@@ -540,7 +533,7 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
   }
 
   Widget _buildPickupDeliverySection(BuildContext context, {required bool isPickup}) {
-    final String title = isPickup ? "2. بيانات الاستلام (Pickup)" : "3. بيانات التسليم (Delivery)";
+    final String title = isPickup ? 'pickupData'.tr : 'deliveryData'.tr;
     final TextEditingController nameController = isPickup ? controller.pickupNameController : controller.deliveryNameController;
     final TextEditingController phoneController = isPickup ? controller.pickupPhoneController : controller.deliveryPhoneController;
     final TextEditingController emailController = isPickup ? controller.pickupEmailController : controller.deliveryEmailController;
@@ -555,18 +548,18 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
         Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Divider(),
 
-        _buildTextField(label: "اسم المسؤول", controller: nameController),
-        _buildTextField(label: "رقم الهاتف", keyboardType: TextInputType.phone, controller: phoneController),
-        _buildTextField(label: "البريد الإلكتروني (اختياري)", keyboardType: TextInputType.emailAddress, isRequired: false, controller: emailController),
+        _buildTextField(label: 'responsibleName'.tr, controller: nameController),
+        _buildTextField(label: 'phoneNumber'.tr, keyboardType: TextInputType.phone, controller: phoneController),
+        _buildTextField(label: 'emailOptional'.tr, keyboardType: TextInputType.emailAddress, isRequired: false, controller: emailController),
 
         _buildLocationPicker(context, isPickup: isPickup, address: address),
 
-        _buildDateTimePicker(label: "يجب أن يتم قبل", date: date, isRequired: true),
+        _buildDateTimePicker(label: 'mustBeDoneBefore'.tr, date: date, isRequired: true),
 
-        Text(isPickup ? "اختر صورة موقع الاستلام (اختياري)": "اختر صورة موقع التسليم (اختياري)"),
+        Text(isPickup ? 'pickupImageOptional'.tr : 'deliveryImageOptional'.tr),
         _buildFilePicker(isPickup ? controller.pickupImage: controller.deliveryImage),
 
-        _buildTextField(label: "ملاحظات إضافية (اختياري)", isRequired: false, maxLines: 3, controller: noteController),
+        _buildTextField(label: 'additionalNotes'.tr, isRequired: false, maxLines: 3, controller: noteController),
       ],
     );
   }
@@ -575,10 +568,10 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("4. شروط المهمة (اختياري)", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('taskConditions'.tr, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Divider(),
         _buildTextField(
-            label: "الشروط",
+            label: 'conditions'.tr,
             isRequired: false,
             maxLines: 4,
             controller: controller.conditionsController
@@ -598,7 +591,7 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
           labelText: label,
           border: const OutlineInputBorder(),
         ),
-        validator: (val) => (isRequired && (val == null || val.isEmpty)) ? "${label} مطلوب" : null,
+        validator: (val) => (isRequired && (val == null || val.isEmpty)) ? '${label} ${'fieldRequired'.tr}' : null,
       ),
     );
   }
@@ -615,7 +608,7 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
         value: value,
         items: items,
         onChanged: onChanged,
-        validator: (v) => v == null ? "يرجى اختيار قيمة لـ $title" : null,
+        validator: (v) => v == null ? '${'pleaseSelectValue'.tr} $title' : null,
       ),
     );
   }
@@ -631,17 +624,17 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
           readOnly: true,
           enabled: false,
           controller: TextEditingController(
-            text: address.value.isEmpty ? "انقر لاختيار الموقع" : address.value,
+            text: address.value.isEmpty ? 'clickToSelectLocation'.tr : address.value,
           ),
           decoration: InputDecoration(
-            labelText: "اختيار الموقع على الخريطة",
+            labelText: 'locationOnMap'.tr,
             border: const OutlineInputBorder(),
             suffixIcon: Icon(address.value.isEmpty ? Icons.map : Icons.check_circle_outline, color: address.value.isEmpty ? Colors.grey : Colors.green),
             disabledBorder: const OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),
           ),
           validator: (val) {
             if (address.value.isEmpty) {
-              return "يجب تحديد الموقع على الخريطة";
+              return 'selectLocationOnMap'.tr;
             }
             return null;
           },
@@ -670,29 +663,21 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
             labelText: label,
             border: const OutlineInputBorder(),
             suffixIcon: const Icon(Icons.calendar_today),
-            errorText: (isRequired && date.value == null) ? "${label} مطلوب" : null,
+            errorText: (isRequired && date.value == null) ? '${label} ${'fieldRequired'.tr}' : null,
           ),
           child: Text(
             date.value != null
                 ? date.value!.toString().substring(0, 10)
-                : "اختر التاريخ",
+                : 'chooseDate'.tr,
           ),
         ),
       )),
     );
   }
 
-
-
-
   Widget _buildFilePicker(RxString imageUrl) {
-
-
     Future<void> _pickFile() async {
-
-
-      // تحديد الامتدادات المسموح بها:
-      final List<String> extensions =  ['jpg', 'jpeg', 'png'] ;
+      final List<String> extensions = ['jpg', 'jpeg', 'png'];
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: extensions,
@@ -700,21 +685,18 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
 
       if (result != null && result.files.single.path != null) {
         final filePath = result.files.single.path!;
-        imageUrl.value= filePath;
-
-
+        imageUrl.value = filePath;
       }
     }
 
-    return
-      Obx(() => Column(
+    return Obx(() => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (imageUrl.value.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
-              "الملف المختار: ${imageUrl.value.startsWith('http') ? "ملف قديم محفوظ" : imageUrl.value.split('/').last}",
+              '${'selectedFile'.tr}: ${imageUrl.value.startsWith('http') ? 'oldSavedFile'.tr : imageUrl.value.split('/').last}',
               style: TextStyle(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
@@ -722,17 +704,13 @@ print("saeeeeeeeeeeeeeeeeedddddddddd$data");
               ),
             ),
           ),
-        Obx(()=> ElevatedButton.icon(
+        ElevatedButton.icon(
           onPressed: _pickFile,
           icon: Icon(imageUrl.value.isEmpty ? Icons.upload_file : Icons.check_circle, color: Colors.white),
-          label: Text(imageUrl.value.isEmpty ? "اختر ملف" : "تغيير الملف المختار", style: const TextStyle(color: Colors.white)),
+          label: Text(imageUrl.value.isEmpty ? 'chooseFile'.tr : 'changeSelectedFile'.tr, style: const TextStyle(color: Colors.white)),
           style: ElevatedButton.styleFrom(backgroundColor: imageUrl.value.isEmpty ? Colors.blue.shade700 : Colors.green.shade700),
         ),
-        ),
-
       ],
     ));
   }
-
-
 }

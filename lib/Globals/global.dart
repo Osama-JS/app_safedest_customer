@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 var current_language = 'ar';
 var dashboardIndex=0;
 
-  var public_uri = "https://tester.safedest.com/api/customer/";
+  var public_uri = "https://o.safedest.com/api/customer/";
 
 var token;
 var notificationToken;

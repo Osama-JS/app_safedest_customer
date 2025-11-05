@@ -4,15 +4,12 @@ import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:save_dest_customer/Views/TaskViews/TasksAdPage.dart';
 
 import '../../Controllers/TaskController.dart';
-import '../../Controllers/TransactionController.dart';
 import '../../Globals/MyColors.dart';
 import '../../Globals/global_methods.dart' as global_methods;
 import '../../Models/TaskModel.dart';
-import '../../Models/TransactionModel.dart';
 import '../../Services/InitialService.dart';
 import '../Widgets/AnimatedSearchBar.dart';
 import '../Widgets/ProgressWithIcon.dart';
-import '../Widgets/custom_image_view.dart';
 import 'AddTaskViews/ValidationOnePage.dart';
 import 'TaskDetailsPage.dart';
 import '../../Globals/global.dart' as globals;
@@ -28,6 +25,7 @@ class _TasksPageState extends State<TasksPage> {
   final iniService = InitialService.to;
   final TaskController controller = Get.put(TaskController());
   final TextEditingController searchController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -35,7 +33,6 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   final List<String> filters = ['running', 'completed'];
-
   RxInt selectedFilter = 0.obs;
 
   @override
@@ -59,7 +56,7 @@ class _TasksPageState extends State<TasksPage> {
             onPressed: () {
               Get.to(() => TasksAdPage());
             },
-            icon: Icon(Icons.ads_click_outlined),
+            icon: const Icon(Icons.ads_click_outlined),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 1.0),
@@ -100,7 +97,7 @@ class _TasksPageState extends State<TasksPage> {
                               final option = filterOptions[index];
                               bool isSelected =
                                   controller.selectedSortOption.value ==
-                                  option["value"];
+                                      option["value"];
 
                               return ListTile(
                                 title: Text(
@@ -116,13 +113,13 @@ class _TasksPageState extends State<TasksPage> {
                                 ),
                                 trailing: isSelected
                                     ? Icon(
-                                        Icons.check,
-                                        color: MyColors.primaryColor,
-                                      )
+                                  Icons.check,
+                                  color: MyColors.primaryColor,
+                                )
                                     : null,
                                 onTap: () {
                                   controller.selectedSortOption.value =
-                                      option["value"];
+                                  option["value"];
                                   controller.resetData();
                                   controller.getData();
                                   Navigator.pop(context);
@@ -182,7 +179,7 @@ class _TasksPageState extends State<TasksPage> {
       body: Column(
         children: [
           Obx(
-            () => Row(
+                () => Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(filters.length, (index) {
                 RxBool isActive = (selectedFilter.value == index).obs;
@@ -225,21 +222,17 @@ class _TasksPageState extends State<TasksPage> {
             ),
           ),
           const SizedBox(height: 10),
-
           Expanded(child: _buildList()),
         ],
       ),
-
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Get.to(ValidationOnePage());
+          Get.to(() => ValidationOnePage());
         },
         backgroundColor: MyColors.primaryColor,
         foregroundColor: Colors.white,
         child: const Icon(Icons.add),
       ),
-
-      // floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
@@ -248,14 +241,12 @@ class _TasksPageState extends State<TasksPage> {
   );
 
   loadInitialData() async {
-    // await Future.delayed(const Duration(seconds: 1));
     controller.resetData();
     controller.getData();
     _refreshController.refreshCompleted();
   }
 
   loadMoreData() async {
-    // await Future.delayed(const Duration(seconds: 1));
     if (controller.total.value > controller.lastItem.value) {
       controller.getData();
     } else {
@@ -266,7 +257,7 @@ class _TasksPageState extends State<TasksPage> {
 
   Widget _buildList() {
     return Obx(
-      () => SmartRefresher(
+          () => SmartRefresher(
         enablePullDown: true,
         enablePullUp: true,
         header: WaterDropHeader(
@@ -289,39 +280,35 @@ class _TasksPageState extends State<TasksPage> {
         onLoading: () => loadMoreData(),
         child: controller.isLoadingData.value
             ? const Center(child: ProgressWithIcon())
-            // ? CircularProgressIndicator()
             : controller.isThereError.value
             ? Center(
-                child: Text(
-                  global_methods.fixErrorMessage(controller.errorMessage.value),
-                ),
-              )
+          child: Text(
+            global_methods.fixErrorMessage(controller.errorMessage.value),
+          ),
+        )
             : controller.dataList.isEmpty
             ? Center(
-                child: Column(
-                  spacing: 48,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Image.asset("assets/images/empty-inbox.png",width: 150 , height: 150,),
-                    Text("no_tasks".tr),
-                    const SizedBox(height: 80),
-                  ],
-                ),
-              )
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text("no_tasks".tr),
+              const SizedBox(height: 80),
+            ],
+          ),
+        )
             : ListView.separated(
-                padding: const EdgeInsets.only(
-                  left: 16,
-                  right: 16,
-                  top: 16,
-                  bottom: 48,
-                ),
-                itemCount: controller.dataList.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 12),
-                // itemBuilder: (_, index)=>_buildCard( controller.dataList[index],index,false),
-                itemBuilder: (_, index) {
-                  return _buildCard(controller.dataList[index], index);
-                },
-              ),
+          padding: const EdgeInsets.only(
+            left: 16,
+            right: 16,
+            top: 16,
+            bottom: 48,
+          ),
+          itemCount: controller.dataList.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (_, index) {
+            return _buildCard(controller.dataList[index], index);
+          },
+        ),
       ),
     );
   }
@@ -334,6 +321,10 @@ class _TasksPageState extends State<TasksPage> {
         return Colors.orange;
       case 'cancelled':
         return Colors.red;
+      case 'advertised':
+        return Colors.blue;
+      case 'in_progress':
+        return Colors.purple;
       default:
         return Colors.grey;
     }
@@ -346,15 +337,20 @@ class _TasksPageState extends State<TasksPage> {
       case 'pending':
         return 'status_pending'.tr;
       case 'cancelled':
+      case 'canceled':
         return 'status_cancelled'.tr;
+      case 'advertised':
+        return 'advertised'.tr;
+      case 'in_progress':
+        return 'in_progress'.tr;
       default:
-        return status;
+        return status.tr;
     }
   }
 
   Widget _buildCard(TaskModel item, int index) {
     return Obx(
-      () => Card(
+          () => Card(
         margin: const EdgeInsets.only(bottom: 16),
         elevation: 3,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -366,7 +362,6 @@ class _TasksPageState extends State<TasksPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // --- Header: Task ID + Status ---
                 Row(
                   children: [
                     Expanded(
@@ -402,8 +397,6 @@ class _TasksPageState extends State<TasksPage> {
                   ],
                 ),
                 const SizedBox(height: 12),
-
-                // --- Pickup Address ---
                 Row(
                   children: [
                     const Icon(
@@ -423,8 +416,6 @@ class _TasksPageState extends State<TasksPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-
-                // --- Delivery Address ---
                 Row(
                   children: [
                     const Icon(Icons.flag, color: Colors.red, size: 20),
@@ -439,14 +430,10 @@ class _TasksPageState extends State<TasksPage> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 12),
-
-                // --- Price and Payment Status ---
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Show price range for advertised tasks, regular price for others
                     if (item.status.value == 'advertised' &&
                         item.ad.value != null &&
                         item.ad.value!.min > 0 &&
@@ -499,12 +486,12 @@ class _TasksPageState extends State<TasksPage> {
   }
 
   Widget _buildAddressRow(
-    BuildContext context,
-    String label,
-    String address,
-    IconData icon,
-    Color color,
-  ) {
+      BuildContext context,
+      String label,
+      String address,
+      IconData icon,
+      Color color,
+      ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -538,10 +525,5 @@ class _TasksPageState extends State<TasksPage> {
 
   void _viewTaskDetails(TaskModel task) {
     Get.to(() => TaskDetailsPage(task: task));
-  }
-
-  void launchPhoneCall(String phone) {
-    // يمكنك استخدام url_launcher لفتح تطبيق الاتصال
-    // لكنه خارج نطاق هذا المثال
   }
 }

@@ -19,8 +19,7 @@ import '../../Globals/global.dart' as globals;
 import 'TasksAdDetailsPage.dart';
 
 class TasksAdPage extends StatefulWidget {
-
-   const TasksAdPage({super.key});
+  const TasksAdPage({super.key});
 
   @override
   State<TasksAdPage> createState() => _TasksAdPageState();
@@ -31,24 +30,28 @@ class _TasksAdPageState extends State<TasksAdPage> {
   final TaskAdController controller = Get.put(TaskAdController());
   final TextEditingController searchController = TextEditingController();
 
-
   final List<String> filters = [
     'running',
     'closed',
   ];
   RxInt selectedFilter = 0.obs;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: MyColors.backgroundColor,
       appBar: AppBar(
-        leading: IconButton(onPressed: ()=>Get.back(),icon: const Icon(Icons.arrow_back_ios)),
+        leading: IconButton(
+            onPressed: () => Get.back(),
+            icon: const Icon(Icons.arrow_back_ios)
+        ),
         backgroundColor: MyColors.backgroundColor,
         surfaceTintColor: MyColors.backgroundColor,
         centerTitle: false,
-        title: Text('all_ad_tasks'.tr,style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 16),),
+        title: Text(
+          'all_ad_tasks'.tr,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
         actions: [
           AnimatedSearchBar(
             backgroundColor: Colors.white,
@@ -56,21 +59,20 @@ class _TasksAdPageState extends State<TasksAdPage> {
             width: MediaQuery.of(context).size.width * 0.61,
             submitButtonColor: Colors.black,
             textStyle: const TextStyle(color: Colors.black),
-            buttonIcon:  Icon(
+            buttonIcon: Icon(
               Icons.search,
               color: MyColors.primaryColor,
             ),
             onChanged: (text) {
-              controller.search.value=text.toString();
-
+              controller.search.value = text.toString();
             },
-            onFieldSubmitted: (text){
-              controller.search.value=text.toString();
+            onFieldSubmitted: (text) {
+              controller.search.value = text.toString();
               controller.resetData();
               controller.getData();
             },
             onSubmit: () {
-              controller.search.value=searchController.text.toString();
+              controller.search.value = searchController.text.toString();
               controller.resetData();
               controller.getData();
             },
@@ -90,18 +92,15 @@ class _TasksAdPageState extends State<TasksAdPage> {
                 style: const TextStyle(fontSize: 15, color: Colors.black),
               ),
             ),
-            onItemSelected: (dynamic item) {
-
-            },
-            overlaySearchListHeight: 100, searchList: const [],
+            onItemSelected: (dynamic item) {},
+            overlaySearchListHeight: 100,
+            searchList: const [],
           ),
         ],
       ),
-
-
       body: Column(
         children: [
-          Obx(()=>  Row(
+          Obx(() => Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(filters.length, (index) {
               RxBool isActive = (selectedFilter.value == index).obs;
@@ -109,7 +108,7 @@ class _TasksAdPageState extends State<TasksAdPage> {
                 child: GestureDetector(
                   onTap: () {
                     selectedFilter.value = index;
-                    controller.selectedFilterOption.value=filters[index];
+                    controller.selectedFilterOption.value = filters[index];
                     loadInitialData();
                   },
                   child: AnimatedContainer(
@@ -139,29 +138,23 @@ class _TasksAdPageState extends State<TasksAdPage> {
                 ),
               );
             }),
-          ),
-          ),
-
+          )),
           const SizedBox(height: 10),
           Expanded(child: _buildList()),
         ],
       ),
-
-
-
     );
   }
+
   final RefreshController _refreshController = RefreshController(initialRefresh: true);
 
   loadInitialData() async {
-    // await Future.delayed(const Duration(seconds: 1));
     controller.resetData();
     controller.getData();
     _refreshController.refreshCompleted();
   }
 
   loadMoreData() async {
-    // await Future.delayed(const Duration(seconds: 1));
     if (controller.total.value > controller.lastItem.value) {
       controller.getData();
     } else {
@@ -170,66 +163,52 @@ class _TasksAdPageState extends State<TasksAdPage> {
     _refreshController.loadComplete();
   }
 
-
   Widget _buildList() {
-    return Obx(
-          () => SmartRefresher(
-        enablePullDown: true,
-        enablePullUp: true,
-        header: WaterDropHeader(
-          complete: Text(
-            "update_successful".tr,
-            style: const TextStyle(color: Colors.green),
-          ),
-          failed: Text(
-            "update_failed".tr,
-            style: const TextStyle(color: Colors.red),
-          ),
-          refresh: Text(
-            "updating".tr,
-            style: TextStyle(color: MyColors.primaryColor),
-          ),
-          waterDropColor: MyColors.primaryColor,
+    return Obx(() => SmartRefresher(
+      enablePullDown: true,
+      enablePullUp: true,
+      header: WaterDropHeader(
+        complete: Text(
+          "update_successful".tr,
+          style: const TextStyle(color: Colors.green),
         ),
-        controller: _refreshController,
-        onRefresh: () => loadInitialData(),
-        onLoading: () => loadMoreData(),
-        child: controller.isLoadingData.value
-            ? const Center(child: ProgressWithIcon())
-        // ? CircularProgressIndicator()
-            : controller.isThereError.value
-            ? Center(child: Text(global_methods.fixErrorMessage(controller.errorMessage.value)))
-            : controller.dataList.isEmpty
-            ? Center(child: Column(
-          spacing: 48,
+        failed: Text(
+          "update_failed".tr,
+          style: const TextStyle(color: Colors.red),
+        ),
+        refresh: Text(
+          "updating".tr,
+          style: TextStyle(color: MyColors.primaryColor),
+        ),
+        waterDropColor: MyColors.primaryColor,
+      ),
+      controller: _refreshController,
+      onRefresh: () => loadInitialData(),
+      onLoading: () => loadMoreData(),
+      child: controller.isLoadingData.value
+          ? const Center(child: ProgressWithIcon())
+          : controller.isThereError.value
+          ? Center(child: Text(global_methods.fixErrorMessage(controller.errorMessage.value)))
+          : controller.dataList.isEmpty
+          ? Center(
+        child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Image.asset("assets/images/empty-inbox.png",width: 150 , height: 150,),
             Text("no_ad_tasks".tr),
-            const SizedBox(height: 80,)
+            const SizedBox(height: 80)
           ],
-        ))
-            :
-        ListView.separated(
-          padding: const EdgeInsets.only(left: 16 , right: 16 , top: 16 , bottom: 48),
-          itemCount: controller.dataList.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          // itemBuilder: (_, index)=>_buildCard( controller.dataList[index],index,false),
-          itemBuilder: (_, index)
-            {
-
-           return _buildCard( controller.dataList[index],index);
-
-          },
-
         ),
+      )
+          : ListView.separated(
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 48),
+        itemCount: controller.dataList.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (_, index) {
+          return _buildCard(controller.dataList[index], index);
+        },
       ),
-    );
+    ));
   }
-
-
-
-
 
   Widget _buildDetailRow(IconData icon, String label, String value, {Color color = MyColors2.textDark}) {
     return Padding(
@@ -243,10 +222,6 @@ class _TasksAdPageState extends State<TasksAdPage> {
             child: Text.rich(
               TextSpan(
                 children: [
-                  // TextSpan(
-                  //   text: "$label: ",
-                  //   style: TextStyle(fontWeight: FontWeight.bold, color: MyColors.textDark),
-                  // ),
                   TextSpan(
                     text: value,
                     style: TextStyle(fontSize: 14, color: color, height: 1.2),
@@ -260,118 +235,99 @@ class _TasksAdPageState extends State<TasksAdPage> {
     );
   }
 
-  Widget _buildCard(TaskAdModel item ,int index ){
-    return
-      GestureDetector(
-        onTap: () {
-          controller.pressedIndex.value = index;
-          // print("saeeeeeeeeeeedddd ${item.taskId.value}");
-          Get.to(()=> TasksAdDetailsPage(taskId: item.id.value,));
-        },
-        child: Card(
-          elevation: 6,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child:      Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 1. عنوان الكارد (اسم العميل ورقم المهمة)
-                Obx(() => Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      item.customer.value.name.value,
-                      style:  TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: MyColors.primaryColor,
+  Widget _buildCard(TaskAdModel item, int index) {
+    return GestureDetector(
+      onTap: () {
+        controller.pressedIndex.value = index;
+        Get.to(() => TasksAdDetailsPage(taskId: item.id.value));
+      },
+      child: Card(
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Obx(() => Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    item.customer.value.name.value,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: MyColors.primaryColor,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: MyColors2.statusRunning.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      item.status.value.tr,
+                      style: TextStyle(
+                        color: MyColors2.statusRunning,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: MyColors2.statusRunning.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        item.status.value.tr, // افتراض أن الحالة مترجمة
-                        style: TextStyle(
-                          color: MyColors2.statusRunning,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
+                ],
+              )),
+              const Divider(height: 15, thickness: 1),
+              Obx(() => _buildDetailRow(
+                Icons.price_change,
+                "price_range".tr,
+                "${item.lowPrice.value.toStringAsFixed(0)} - ${item.highPrice.value.toStringAsFixed(0)} ${'currency'.tr}",
+                color: MyColors2.accentColor,
+              )),
+              const SizedBox(height: 10),
+              Obx(() => _buildDetailRow(
+                Icons.location_on_outlined,
+                "from".tr,
+                "${'from'.tr}: ${item.fromAddress.value}",
+              )),
+              Obx(() => _buildDetailRow(
+                Icons.assistant_direction,
+                "to".tr,
+                "${'to'.tr}: ${item.toAddress.value}",
+              )),
+              const SizedBox(height: 10),
+              Obx(() => Row(
+                children: [
+                  Icon(Icons.label_important_outline, size: 18, color: Colors.grey.shade600),
+                  const SizedBox(width: 5),
+                  Text(
+                    "${'task_number'.tr}: #${item.taskId.value}",
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                  ),
+                ],
+              )),
+              if (item.note.value.isNotEmpty)
+                Obx(() => Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: _buildDetailRow(
+                    Icons.notes,
+                    "notes".tr,
+                    item.note.value,
+                    color: MyColors2.textDark.withOpacity(0.8),
+                  ),
                 )),
-                const Divider(height: 15, thickness: 1),
-
-                // 2. تفاصيل السعر
-                Obx(() => _buildDetailRow(
-                  Icons.price_change,
-                  "نطاق السعر",
-                  "${item.lowPrice.value.toStringAsFixed(0)} - ${item.highPrice.value.toStringAsFixed(0)} ريال",
-                  color: MyColors2.accentColor,
-                )),
-
-                const SizedBox(height: 10),
-
-                // 3. تفاصيل الموقع
-                Obx(() => _buildDetailRow(
-                  Icons.location_on_outlined,
-                  "من",
-                  "من: ${item.fromAddress.value}",
-                )),
-                Obx(() => _buildDetailRow(
-                  Icons.assistant_direction,
-                  "إلى",
-                  "إلى: ${item.toAddress.value}",
-                )),
-
-                const SizedBox(height: 10),
-
-                // 4. رقم المهمة والملاحظات
-                Obx(() => Row(
-                  children: [
-                    Icon(Icons.label_important_outline, size: 18, color: Colors.grey.shade600),
-                    const SizedBox(width: 5),
-                    Text(
-                      "رقم المهمة: #${item.taskId.value}",
-                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
-                    ),
-                  ],
-                )),
-
-                // عرض الملاحظات إذا كانت موجودة
-                if (item.note.value.isNotEmpty)
-                  Obx(() => Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: _buildDetailRow(
-                        Icons.notes, "ملاحظات", item.note.value,
-                        color: MyColors2.textDark.withOpacity(0.8)),
-                  )),
-              ],
-            ),
+            ],
           ),
         ),
-      );
-
+      ),
+    );
   }
-
-
-
-
-
-
-
 }
 
-
 class MyColors2 {
-  static const Color primaryColor = Color(0xFF1E88E5); // أزرق داكن
-  static const Color accentColor = Color(0xFFFFB300); // أصفر
-  static const Color statusRunning = Color(0xFF4CAF50); // أخضر للحالة
+  static const Color primaryColor = Color(0xFF1E88E5);
+  static const Color accentColor = Color(0xFFFFB300);
+  static const Color statusRunning = Color(0xFF4CAF50);
   static const Color textDark = Color(0xFF333333);
 }

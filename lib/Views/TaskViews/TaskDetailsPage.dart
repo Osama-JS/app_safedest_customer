@@ -35,10 +35,9 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       final result = await controller.getTaskDetails(widget.task.id.value);
 
       if (result["success"] == true) {
-        // Parse the API response and update _currentTask and _taskHistory
         final data = result["data"];
         setState(() {
-          _currentTask = widget.task; // For now, use the passed task
+          _currentTask = widget.task;
           _taskHistory = data["history"] ?? [];
           _isLoading = false;
         });
@@ -48,11 +47,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           _taskHistory = [];
           _isLoading = false;
         });
-        // Get.snackbar(
-        //   'error'.tr,
-        //   result["message"] ?? 'failed_to_load_task_details'.tr,
-        //   snackPosition: SnackPosition.BOTTOM,
-        // );
       }
     } catch (e) {
       setState(() {
@@ -89,21 +83,19 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: CustomScrollView(
         slivers: [
-          // Modern App Bar
           SliverAppBar(
             expandedHeight: 250,
             floating: false,
             pinned: true,
             backgroundColor: const Color(0xFFd40019),
             actions: [
-              // Edit button for editable tasks
               if ((task.status.value == "in_progress" ||
-                      task.status.value == "advertised") &&
+                  task.status.value == "advertised") &&
                   task.driver.name.value == '')
                 IconButton(
                   onPressed: () {
                     Get.to(
-                      () => ValidationOnePage(
+                          () => ValidationOnePage(
                         taskIdForEdit: task.id.value,
                         taskModelForEdit: task,
                       ),
@@ -120,15 +112,14 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               if (task.status.value != "in_progress" &&
                   task.status.value != "advertised" &&
                   task.status.value != "canceled" &&
-                  task.status.value != "refound"
-              )
-              IconButton(
-                onPressed: () {
-                  Get.to(PaymentScreen(taskId: task.id.value,));
-                },
-                icon: const Icon(Icons.payment_outlined, color: Colors.white),
-                tooltip: 'task_history'.tr,
-              ),
+                  task.status.value != "refound")
+                IconButton(
+                  onPressed: () {
+                    Get.to(PaymentScreen(taskId: task.id.value));
+                  },
+                  icon: const Icon(Icons.payment_outlined, color: Colors.white),
+                  tooltip: 'make_payment'.tr,
+                ),
             ],
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
@@ -152,7 +143,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                 ),
                 child: Stack(
                   children: [
-                    // Background Pattern
                     Positioned(
                       top: -50,
                       right: -50,
@@ -161,7 +151,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                         height: 200,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.1),
+                          color: Colors.white.withOpacity(0.1),
                         ),
                       ),
                     ),
@@ -173,27 +163,25 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                         height: 150,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: Colors.white.withValues(alpha: 0.05),
+                          color: Colors.white.withOpacity(0.05),
                         ),
                       ),
                     ),
-                    // Content
                     Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(height: 30),
-                          // Status Badge
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 20,
                               vertical: 10,
                             ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
+                              color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(25),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
+                                color: Colors.white.withOpacity(0.3),
                                 width: 1,
                               ),
                             ),
@@ -218,7 +206,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                             ),
                           ),
                           const SizedBox(height: 5),
-                          // Total Price
                           Column(
                             children: [
                               Text(
@@ -233,23 +220,23 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                                   task.ad.value != null &&
                                   task.ad.value!.min > 0 &&
                                   task.ad.value!.max > 0)
-                              Text(
-                                '${task.ad.value!.min.toStringAsFixed(2)} - ${task.ad.value!.max.toStringAsFixed(2)} ${'currency'.tr}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
+                                Text(
+                                  '${task.ad.value!.min.toStringAsFixed(2)} - ${task.ad.value!.max.toStringAsFixed(2)} ${'currency'.tr}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              else
+                                Text(
+                                  '${task.price.value.toStringAsFixed(2)} ${'currency'.tr}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              )
-                                else
-                              Text(
-                                '${task.price.value.toStringAsFixed(2)} ${'currency'.tr}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
                             ],
                           ),
                         ],
@@ -260,31 +247,20 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
               ),
             ),
           ),
-          // Content
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Status Progress
                   _buildStatusProgress(task),
                   const SizedBox(height: 24),
-
-                  // Task Details
                   _buildTaskDetails(task),
                   const SizedBox(height: 24),
-
-                  // Locations
                   _buildLocations(task),
                   const SizedBox(height: 24),
-
-                  // Driver Info (if assigned)
                   if (task.driver.name.value.isNotEmpty) _buildDriverInfo(task),
-
-                  // Additional Data
-                  if (task.additionalData.isNotEmpty)
-                    _buildAdditionalData(task),
+                  if (task.additionalData.isNotEmpty) _buildAdditionalData(task),
                 ],
               ),
             ),
@@ -333,28 +309,28 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
+            Expanded(
+              child: Text(
+                value,
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        )
     );
   }
 
@@ -394,12 +370,12 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
   }
 
   Widget _buildLocationRow(
-    String label,
-    String address,
-    IconData icon,
-    Color color,
-    String time,
-  ) {
+      String label,
+      String address,
+      IconData icon,
+      Color color,
+      String time,
+      ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -408,7 +384,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.1),
           ),
           child: Icon(icon, color: color, size: 20),
         ),
@@ -465,7 +441,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                   height: 50,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: const Color(0xFFd40019).withValues(alpha: 0.1),
+                    color: const Color(0xFFd40019).withOpacity(0.1),
                   ),
                   child: const Icon(
                     Icons.person,
@@ -496,11 +472,6 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
                     ],
                   ),
                 ),
-                // if (task.driver.phone.value.isNotEmpty)
-                //   IconButton(
-                //     onPressed: () => _callDriver(task.driver.phone.value),
-                //     icon: const Icon(Icons.phone, color: Color(0xFFd40019)),
-                //   ),
               ],
             ),
           ],
@@ -524,7 +495,7 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
             ),
             const SizedBox(height: 16),
             ...task.additionalData.map(
-              (data) => Padding(
+                  (data) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: _buildDetailRow(data.label.value, data.value.value),
               ),
@@ -576,13 +547,4 @@ class _TaskDetailsPageState extends State<TaskDetailsPage> {
           TaskHistorySheet(task: _currentTask!, history: _taskHistory),
     );
   }
-
-  // void _callDriver(String phone) {
-  //   // TODO: Implement phone call functionality
-  //   Get.snackbar(
-  //     'info'.tr,
-  //     'calling'.trParams({'phone': phone}),
-  //     snackPosition: SnackPosition.BOTTOM,
-  //   );
-  // }
 }

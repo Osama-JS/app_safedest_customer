@@ -127,11 +127,9 @@ class ValidationOneController extends GetxController {
   final RxList<DynamicFieldModel> additionalFields = <DynamicFieldModel>[].obs;
   Map<String, dynamic>? rawTaskTemplates;
   final List<String> templateKeys = ['task_template', 'task_from_template', 'task_to_template'];
-  // final List<String> templateKeys = ['task_template'];
   final RxInt selectedTemplateIndex = (-1).obs;
   final RxList<String> availableTemplatesKeys = <String>[].obs;
 
-  // 💡 تم تبسيط متغيرات القالب
   final RxInt selectedTemplateId = (-1).obs;
   final RxString selectedTemplateName = ''.obs;
   final Map<String, String> templateTitlesMap = {};
@@ -157,23 +155,22 @@ class ValidationOneController extends GetxController {
 
         allVehicles.clear();
         allVehicles.value = vehiclesJson.map((item) => VehicleData.fromJson(item)).toList();
-print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_template :${dataBody['task_template']} ");
-print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_from_template :${dataBody['task_from_template']} ");
-print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_template']} ");
+
         rawTaskTemplates = {
           'task_template': dataBody['task_template'],
           'task_from_template': dataBody['task_from_template'],
           'task_to_template': dataBody['task_to_template'],
         };
 
+        // استخدام الترجمة لأسماء القوالب
         if(rawTaskTemplates!["task_template"]!=null){
-          rawTaskTemplates!["task_template"]['template']['name']="مهمه عاديه";
+          rawTaskTemplates!["task_template"]['template']['name'] = 'normalTask'.tr;
         }
         if(rawTaskTemplates!["task_from_template"]!=null){
-          rawTaskTemplates!["task_from_template"]['template']['name']="مهمة من مينا";
+          rawTaskTemplates!["task_from_template"]['template']['name'] = 'taskFromPort'.tr;
         }
         if(rawTaskTemplates!["task_to_template"]!=null){
-          rawTaskTemplates!["task_to_template"]['template']['name']="مهمة الى ميناء";
+          rawTaskTemplates!["task_to_template"]['template']['name'] = 'taskToPort'.tr;
         }
 
         availableTemplatesKeys.clear();
@@ -185,7 +182,6 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
             templateTitlesMap[key] = templateData['template']['name'] ?? key;
           }
         }
-
 
         if (isEditMode.value && taskModelForEdit.value != null) {
           _initializeForEdit(taskModelForEdit.value!);
@@ -207,8 +203,6 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
     }
   }
 
-
-  // ... (دالة _initSingleVehicle تبقى كما هي)
   void _initSingleVehicle() {
     if (allVehicles.isNotEmpty && singleSelectedVehicle.value == null) {
       final defaultVehicle = allVehicles.first;
@@ -228,7 +222,6 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
     }
   }
 
-  // 💡 تعديل دالة التهيئة لوضع التعديل
   void _initializeForEdit(TaskModel task) {
     final parts = task.vehicle.value.split(RegExp(r'\s*-\s*')).map((s) => s.trim()).toList();
 
@@ -276,7 +269,6 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
     }
   }
 
-  // تحديث منطق تغيير القالب ليشمل تهيئة بيانات التعديل
   void changeTemplate(String templateKey) {
     if (templateKeys.contains(templateKey) && availableTemplatesKeys.contains(templateKey)) {
       final templateData = rawTaskTemplates![templateKey];
@@ -290,11 +282,9 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
         selectedTemplateId.value = templateInfo['id'] ?? -1;
         selectedTemplateName.value = templateInfo['name'] ?? '';
       }
-
     }
   }
 
-  // 💡 إزالة دالة changeTemplate واستبدالها بالمنطق المبسّط لـ _updateAdditionalFields
   void _updateAdditionalFields(String templateKey, {List<AdditionalDataModel>? initialData}) {
     if (rawTaskTemplates == null || rawTaskTemplates![templateKey] == null) return;
 
@@ -319,7 +309,7 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
             if(savedEntry.expirationDate.value!=null) {
               field.expirationDate.value = savedEntry.expirationDate.value;
             }
-            field.fileUrl.value = savedEntry.value.value; // تحديث رابط الملف
+            field.fileUrl.value = savedEntry.value.value;
           }
         }
       }
@@ -327,21 +317,20 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
     additionalFields.value = tempFields;
   }
 
-  // 💡 تعديل دالة generatePayload لتبسيط التعامل مع أنواع الحقول الجديدة والملفات
   Map<String, dynamic> generatePayload() {
     if (!formKey.currentState!.validate()) {
-      Get.snackbar("خطأ", "يرجى ملء جميع الحقول المطلوبة بشكل صحيح.", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('error'.tr, 'pleaseFillRequiredFields'.tr, snackPosition: SnackPosition.BOTTOM);
       return {};
     }
 
     final vehicle = singleSelectedVehicle.value;
     if (vehicle == null) {
-      Get.snackbar("خطأ", "يجب اختيار مركبة واحدة.", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('error'.tr, 'mustSelectOneVehicle'.tr, snackPosition: SnackPosition.BOTTOM);
       return {};
     }
 
     if (selectedTemplateIndex.value == -1 || rawTaskTemplates == null) {
-      Get.snackbar("خطأ", "لم يتم تحميل أو اختيار قالب بيانات إضافية.", snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar('error'.tr, 'noTemplateLoaded'.tr, snackPosition: SnackPosition.BOTTOM);
       return {};
     }
 
@@ -368,10 +357,9 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
           break;
 
         case 'image':
-        case 'file': // 💡 إضافة نوع 'file'
+        case 'file':
           if (field.required && fileValue.isEmpty) {
-            // التحقق من الملف فقط إذا كان مطلوباً
-            Get.snackbar("خطأ", "ملف ${field.label} مطلوب.", snackPosition: SnackPosition.BOTTOM);
+            Get.snackbar('error'.tr, '${'fieldRequired'.tr}: ${field.label}', snackPosition: SnackPosition.BOTTOM);
             return {};
           }
           additionalFieldsPayload["${field.name}_file"] = fileValue;
@@ -379,7 +367,7 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
 
         case 'file_with_text':
           if (field.required && fileValue.isEmpty) {
-            Get.snackbar("خطأ", "ملف ${field.label} مطلوب.", snackPosition: SnackPosition.BOTTOM);
+            Get.snackbar('error'.tr, '${'fieldRequired'.tr}: ${field.label}', snackPosition: SnackPosition.BOTTOM);
             return {};
           }
           additionalFieldsPayload["${field.name}_file_file"] = fileValue;
@@ -388,7 +376,7 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
 
         case 'file_expiration_date':
           if (field.required && (fileValue.isEmpty || field.expirationDate.value == null)) {
-            Get.snackbar("خطأ", "الملف وتاريخ الانتهاء لـ ${field.label} مطلوبان.", snackPosition: SnackPosition.BOTTOM);
+            Get.snackbar('error'.tr, '${'fieldRequired'.tr}: ${field.label}', snackPosition: SnackPosition.BOTTOM);
             return {};
           }
           additionalFieldsPayload["${field.name}_file_file"] = fileValue;
@@ -407,6 +395,8 @@ print("ssssssaaaaaaaaaaaeeeeeeedddddddd task_to_template :${dataBody['task_to_te
     };
   }
 }
+
+
 class ValidationOnePage extends StatefulWidget {
   final TaskModel? taskModelForEdit;
   final int? taskIdForEdit;
@@ -439,11 +429,10 @@ class _ValidationOnePageState extends State<ValidationOnePage> {
   }
 
   Future<void> sendTaskPayload(BuildContext context, Map<String, dynamic> payload, String token) async {
-     String endpoint = "tasks/validate-step1";
-
+    String endpoint = "tasks/validate-step1";
 
     final url = Uri.parse(globals.public_uri + endpoint);
-print("ddddddddddddddddddddddd:$url");
+
     if (!await global_methods.isInternetAvailable()) {
       global_methods.errorView(context, 'checkInternetConnection'.tr);
       return;
@@ -457,11 +446,11 @@ print("ddddddddddddddddddddddd:$url");
 
     request.fields['template'] = payload['template'].toString();
     request.fields['vehicles'] = jsonEncode(payload['vehicles']);
-     if(controller.isEditMode.value){
-       request.fields['id'] = widget.taskIdForEdit.toString();
-     }
-    final Map<String, dynamic> additionalFieldsPayload = payload['additional_fields'];
+    if(controller.isEditMode.value){
+      request.fields['id'] = widget.taskIdForEdit.toString();
+    }
 
+    final Map<String, dynamic> additionalFieldsPayload = payload['additional_fields'];
     Map<String, dynamic> textAndUrlFields = {};
 
     for (var key in additionalFieldsPayload.keys) {
@@ -481,9 +470,6 @@ print("ddddddddddddddddddddddd:$url");
             request.files.add(multipartFile);
           }
         }
-        // else {
-        //   textAndUrlFields[key.substring(0, key.length - 5)] = fileValue;
-        // }
       } else {
         textAndUrlFields[key] = value.toString();
       }
@@ -495,26 +481,26 @@ print("ddddddddddddddddddddddd:$url");
       });
     }
 
-
-
     try {
-
-print("niaaaaaaaaaaaaafff${request.fields}");
       http.StreamedResponse streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
       var data = jsonDecode(response.body);
 
       global_methods.hideLoadingDialog();
 
-      print("API Response: $data");
-
       if (data["status"] == 200) {
-        Get.snackbar("نجاح", "تم التحقق بنجاح", snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green);
+        Get.snackbar('success'.tr, 'validationSuccess'.tr,
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.green);
 
-        globals.stepOnePayload=payload;
+        globals.stepOnePayload = payload;
         if(controller.isEditMode.value){
-          Get.to(() => ValidationTwoPage(stepOneResponse: response,taskModelForEdit: widget.taskModelForEdit,taskIdForEdit: widget.taskIdForEdit,));
-        }else{
+          Get.to(() => ValidationTwoPage(
+            stepOneResponse: response,
+            taskModelForEdit: widget.taskModelForEdit,
+            taskIdForEdit: widget.taskIdForEdit,
+          ));
+        } else {
           Get.to(() => ValidationTwoPage(stepOneResponse: response));
         }
       } else {
@@ -523,15 +509,13 @@ print("niaaaaaaaaaaaaafff${request.fields}");
           errorMessage += "\n" + data["error"].toString();
         }
 
-        Get.snackbar("خطأ في API", "فشل الإرسال: $errorMessage",
+        Get.snackbar('apiError'.tr, '${'sendFailed'.tr}: $errorMessage',
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: Colors.red.shade600,
             colorText: Colors.white);
       }
     } catch (e) {
-      print("niaaaaaaaaaaaa$e");
-
-      Get.snackbar("خطأ الإرسال", "حدث خطأ أثناء الاتصال بالخادم: $e",
+      Get.snackbar('sendError'.tr, '${'connectionError'.tr}: $e',
           snackPosition: SnackPosition.BOTTOM,
           backgroundColor: Colors.red.shade600,
           colorText: Colors.white);
@@ -544,8 +528,8 @@ print("niaaaaaaaaaaaaafff${request.fields}");
     return Scaffold(
       appBar: AppBar(
         title: Obx(() => Text(controller.isEditMode.value
-            ? "تعديل المهمة #${widget.taskIdForEdit ?? controller.taskModelForEdit.value?.id.value ?? 'N/A'}"
-            : "إنشاء مهمة جديدة")),
+            ? '${'editTask'.tr} #${widget.taskIdForEdit ?? controller.taskModelForEdit.value?.id.value ?? 'N/A'}'
+            : 'createNewTask'.tr)),
         backgroundColor: MyColors.appBarColor,
       ),
       body: Obx(() {
@@ -579,7 +563,7 @@ print("niaaaaaaaaaaaaafff${request.fields}");
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   child: Obx(() => Text(
-                      controller.isEditMode.value ? "تعديل وحفظ التغييرات" : "المتابعة إلى الخطوة التالية",
+                      controller.isEditMode.value ? 'editAndSave'.tr : 'continueToNextStep'.tr,
                       style: const TextStyle(color: Colors.white)
                   )),
                 ),
@@ -595,12 +579,12 @@ print("niaaaaaaaaaaaaafff${request.fields}");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("تحديد المركبة المطلوبة", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('vehicleSelection'.tr, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Divider(),
         Obx(() {
           final selectedItem = controller.singleSelectedVehicle.value;
           if (selectedItem == null || controller.allVehicles.isEmpty) {
-            return const Center(child: Text("لا توجد بيانات مركبات متاحة."));
+            return Center(child: Text('noVehiclesAvailable'.tr));
           }
 
           final currentVehicle = controller.allVehicles.firstWhereOrNull((v) => v.id == selectedItem.vehicleId.value);
@@ -613,7 +597,7 @@ print("niaaaaaaaaaaaaafff${request.fields}");
             return Column(
               children: [
                 _buildDropdown<int>(
-                  title: "نوع المركبة",
+                  title: 'vehicleType'.tr,
                   value: selectedItem.vehicleId.value,
                   items: controller.allVehicles.map((v) => DropdownMenuItem(value: v.id, child: Text(v.name))).toList(),
                   onChanged: (newId) {
@@ -631,7 +615,7 @@ print("niaaaaaaaaaaaaafff${request.fields}");
                   },
                 ),
                 _buildDropdown<int>(
-                  title: "تفصيل المركبة",
+                  title: 'vehicleDetail'.tr,
                   value: selectedItem.vehicleTypeId.value,
                   items: currentTypes.map((t) => DropdownMenuItem(value: t.id, child: Text(t.name))).toList(),
                   onChanged: (newId) {
@@ -647,7 +631,7 @@ print("niaaaaaaaaaaaaafff${request.fields}");
                 ),
                 if (currentSizes.isNotEmpty)
                   _buildDropdown<int>(
-                    title: "الحجم (اختياري)",
+                    title: 'vehicleSize'.tr,
                     value: selectedItem.vehicleSizeId.value != 0 ? selectedItem.vehicleSizeId.value : currentSizes.first.id,
                     items: currentSizes.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
                     onChanged: (newId) {
@@ -679,10 +663,10 @@ print("niaaaaaaaaaaaaafff${request.fields}");
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("اختيار قالب البيانات الإضافية", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('templateSelection'.tr, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const Divider(),
           _buildDropdown<String>(
-            title: "القالب المختار",
+            title: 'selectedTemplate'.tr,
             value: selectedKey,
             items: controller.availableTemplatesKeys.map((key) => DropdownMenuItem(
                 value: key,
@@ -712,8 +696,8 @@ print("niaaaaaaaaaaaaafff${request.fields}");
         items: items,
         onChanged: onChanged,
         validator: (v) {
-          if (title == "الحجم (اختياري)") return null;
-          return v == null || (v is int && v == 0) ? "يرجى اختيار قيمة لـ $title" : null;
+          if (title == 'vehicleSize'.tr) return null;
+          return v == null || (v is int && v == 0) ? '${'pleaseSelectValue'.tr} $title' : null;
         },
       ),
     );
@@ -723,7 +707,7 @@ print("niaaaaaaaaaaaaafff${request.fields}");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text("بيانات القالب الإضافية", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text('additionalData'.tr, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
         const Divider(),
         Obx(() => ListView.builder(
           shrinkWrap: true,
@@ -731,7 +715,6 @@ print("niaaaaaaaaaaaaafff${request.fields}");
           itemCount: controller.additionalFields.length,
           itemBuilder: (context, index) {
             final field = controller.additionalFields[index];
-            print("niaaaaaaaaaaaaaaaaaaaa fileds page${field.label}");
             return _buildDynamicField(field);
           },
         )),
@@ -739,135 +722,131 @@ print("niaaaaaaaaaaaaafff${request.fields}");
     );
   }
 
-// في كلاس _ValidationOnePageState
-
-   Widget _buildDynamicField(DynamicFieldModel field) {
-      switch (field.type) {
-       case 'string':
-       case 'text': // 💡 إضافة نوع 'text'
+  Widget _buildDynamicField(DynamicFieldModel field) {
+    switch (field.type) {
+      case 'string':
+      case 'text':
         return Padding(
-         padding: const EdgeInsets.symmetric(vertical: 8.0),
-         child: Obx(() => TextFormField(
-          initialValue: field.textValue.value,
-          keyboardType: TextInputType.text,
-          maxLines: field.type == 'text' ? 3 : 1, // إتاحة أسطر متعددة للـ 'text'
-          decoration: InputDecoration(
-           labelText: field.label,
-           border: const OutlineInputBorder(),
-          ),
-          onChanged: (val) => field.textValue.value = val,
-          validator: (val) => (field.required && (val == null || val.isEmpty)) ? "${field.label} مطلوب" : null,
-         )),
-        );
-
-       case 'number':
-        return Padding(
-         padding: const EdgeInsets.symmetric(vertical: 8.0),
-         child: Obx(() => TextFormField(
-          initialValue: field.textValue.value,
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-           labelText: field.label,
-           border: const OutlineInputBorder(),
-          ),
-          onChanged: (val) => field.textValue.value = val,
-          validator: (val) => (field.required && (val == null || val.isEmpty)) ? "${field.label} مطلوب" : null,
-         )),
-        );
-
-       case 'url': // 💡 إضافة نوع 'url'
-        return Padding(
-         padding: const EdgeInsets.symmetric(vertical: 8.0),
-         child: Obx(() => TextFormField(
-          initialValue: field.textValue.value,
-          keyboardType: TextInputType.url,
-          decoration: InputDecoration(
-           labelText: field.label,
-           border: const OutlineInputBorder(),
-          ),
-          onChanged: (val) => field.textValue.value = val,
-          validator: (val) {
-    if (field.required && (val == null || val.isEmpty)) return "${field.label} مطلوب";
-    if (val != null && val.isNotEmpty && !val.startsWith('http')) return "صيغة الرابط غير صحيحة";
-    return null;
-    },
-         )),
-        );
-
-       case 'date': // 💡 إضافة نوع 'date'
-        return _buildSimpleDatePicker(field);
-
-       case 'image':
-        return Padding(
-         padding: const EdgeInsets.symmetric(vertical: 8.0),
-         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-           Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-           _buildFilePicker(field, fileType: FileType.image),
-           const SizedBox(height: 10),
-          ],
-         ),
-        );
-
-       case 'file': // 💡 إضافة نوع 'file'
-        return Padding(
-         padding: const EdgeInsets.symmetric(vertical: 8.0),
-         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-           Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-           _buildFilePicker(field),
-           const SizedBox(height: 10),
-          ],
-         ),
-        );
-
-
-       case 'file_with_text':
-        return Padding(
-         padding: const EdgeInsets.symmetric(vertical: 8.0),
-         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-           Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-           _buildFilePicker(field),
-           const SizedBox(height: 8),
-           Obx(() => TextFormField(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Obx(() => TextFormField(
             initialValue: field.textValue.value,
+            keyboardType: TextInputType.text,
+            maxLines: field.type == 'text' ? 3 : 1,
             decoration: InputDecoration(
-             labelText: "أدخل ${field.label}",
-             border: const OutlineInputBorder(),
+              labelText: field.label,
+              border: const OutlineInputBorder(),
             ),
             onChanged: (val) => field.textValue.value = val,
-            validator: (val) => (field.required && (val == null || val.isEmpty)) ? "حقل النص لـ ${field.label} مطلوب" : null,
-           )),
-           const SizedBox(height: 10),
-          ],
-         ),
+            validator: (val) => (field.required && (val == null || val.isEmpty)) ? '${field.label} ${'fieldRequired'.tr}' : null,
+          )),
         );
 
-       case 'file_expiration_date':
+      case 'number':
         return Padding(
-         padding: const EdgeInsets.symmetric(vertical: 8.0),
-         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-           Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-           _buildFilePicker(field),
-           const SizedBox(height: 8),
-           _buildDatePicker(field),
-           const SizedBox(height: 10),
-          ],
-         ),
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Obx(() => TextFormField(
+            initialValue: field.textValue.value,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: field.label,
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (val) => field.textValue.value = val,
+            validator: (val) => (field.required && (val == null || val.isEmpty)) ? '${field.label} ${'fieldRequired'.tr}' : null,
+          )),
         );
 
-       default:
-        return const SizedBox.shrink();
-      }
-     }
+      case 'url':
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Obx(() => TextFormField(
+            initialValue: field.textValue.value,
+            keyboardType: TextInputType.url,
+            decoration: InputDecoration(
+              labelText: field.label,
+              border: const OutlineInputBorder(),
+            ),
+            onChanged: (val) => field.textValue.value = val,
+            validator: (val) {
+              if (field.required && (val == null || val.isEmpty)) return '${field.label} ${'fieldRequired'.tr}';
+              if (val != null && val.isNotEmpty && !val.startsWith('http')) return 'invalidUrlFormat'.tr;
+              return null;
+            },
+          )),
+        );
 
-// 💡 دالة جديدة لعرض حقل التاريخ البسيط (date)
+      case 'date':
+        return _buildSimpleDatePicker(field);
+
+      case 'image':
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              _buildFilePicker(field, fileType: FileType.image),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+
+      case 'file':
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              _buildFilePicker(field),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+
+      case 'file_with_text':
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              _buildFilePicker(field),
+              const SizedBox(height: 8),
+              Obx(() => TextFormField(
+                initialValue: field.textValue.value,
+                decoration: InputDecoration(
+                  labelText: '${'enterText'.tr} ${field.label}',
+                  border: const OutlineInputBorder(),
+                ),
+                onChanged: (val) => field.textValue.value = val,
+                validator: (val) => (field.required && (val == null || val.isEmpty)) ? '${field.label} ${'fieldRequired'.tr}' : null,
+              )),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+
+      case 'file_expiration_date':
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(field.label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              _buildFilePicker(field),
+              const SizedBox(height: 8),
+              _buildDatePicker(field),
+              const SizedBox(height: 10),
+            ],
+          ),
+        );
+
+      default:
+        return const SizedBox.shrink();
+    }
+  }
+
   Widget _buildSimpleDatePicker(DynamicFieldModel field) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -888,34 +867,29 @@ print("niaaaaaaaaaaaaafff${request.fields}");
             labelText: field.label,
             border: const OutlineInputBorder(),
             suffixIcon: const Icon(Icons.calendar_today),
-            errorText: (field.required && field.textValue.value.isEmpty) ? "${field.label} مطلوب" : null,
+            errorText: (field.required && field.textValue.value.isEmpty) ? '${field.label} ${'fieldRequired'.tr}' : null,
           ),
           child: Text(
             field.textValue.value.isNotEmpty
                 ? field.textValue.value
-                : "اختر تأريخ",
+                : 'chooseDate'.tr,
           ),
         ),
       )),
     );
   }
 
-// ... (بقية دوال الـ Widget تبقى كما هي)
   Widget _buildFilePicker(DynamicFieldModel field, {FileType fileType = FileType.custom}) {
 
     Future<void> _pickFile() async {
-
       final bool isImage = fileType == FileType.image;
-
-      // تحديد الامتدادات المسموح بها:
       final List<String> extensions = isImage
-          ? ['jpg', 'jpeg', 'png'] // لـ type: image
-          : ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png']; // لـ type: file_expiration_date أو file_with_text
+          ? ['jpg', 'jpeg', 'png']
+          : ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
 
       FilePickerResult? result = await FilePicker.platform.pickFiles(
-        // 🏆 نستخدم FileType.custom دائماً إذا كنا نمرر allowedExtensions
         type: FileType.custom,
-        allowedExtensions: extensions, // نمرر القائمة المحددة
+        allowedExtensions: extensions,
       );
 
       if (result != null && result.files.single.path != null) {
@@ -931,7 +905,7 @@ print("niaaaaaaaaaaaaafff${request.fields}");
           Padding(
             padding: const EdgeInsets.only(bottom: 8.0),
             child: Text(
-              "الملف المختار: ${field.fileUrl.value.startsWith('http') ? "ملف قديم محفوظ" : field.fileUrl.value.split('/').last}",
+              '${'selectedFile'.tr}: ${field.fileUrl.value.startsWith('http') ? 'oldSavedFile'.tr : field.fileUrl.value.split('/').last}',
               style: TextStyle(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,
@@ -939,19 +913,18 @@ print("niaaaaaaaaaaaaafff${request.fields}");
               ),
             ),
           ),
-        Obx(()=> ElevatedButton.icon(
+        ElevatedButton.icon(
           onPressed: _pickFile,
           icon: Icon(field.fileUrl.value.isEmpty ? Icons.upload_file : Icons.check_circle, color: Colors.white),
-          label: Text(field.fileUrl.value.isEmpty ? "اختر ملف" : "تغيير الملف المختار", style: const TextStyle(color: Colors.white)),
+          label: Text(field.fileUrl.value.isEmpty ? 'chooseFile'.tr : 'changeSelectedFile'.tr, style: const TextStyle(color: Colors.white)),
           style: ElevatedButton.styleFrom(backgroundColor: field.fileUrl.value.isEmpty ? Colors.blue.shade700 : Colors.green.shade700),
-        ),
         ),
         if (field.required)
           Container(
             height: 0,
             width: 0,
             child: TextFormField(
-              validator: (val) => field.fileUrl.value.isEmpty ? "${field.label} مطلوب" : null,
+              validator: (val) => field.fileUrl.value.isEmpty ? '${field.label} ${'fieldRequired'.tr}' : null,
               controller: TextEditingController(text: field.fileUrl.value),
             ),
           )
@@ -974,15 +947,15 @@ print("niaaaaaaaaaaaaafff${request.fields}");
       },
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: "تأريخ الانتهاء",
+          labelText: 'expirationDate'.tr,
           border: const OutlineInputBorder(),
           suffixIcon: const Icon(Icons.calendar_today),
-          errorText: (field.required && field.expirationDate.value == null) ? "تأريخ الانتهاء مطلوب" : null,
+          errorText: (field.required && field.expirationDate.value == null) ? '${'expirationDate'.tr} ${'fieldRequired'.tr}' : null,
         ),
         child: Text(
           field.expirationDate.value != null
               ? field.expirationDate.value!.toString().substring(0, 10)
-              : "اختر تأريخ الانتهاء",
+              : 'chooseExpirationDate'.tr,
         ),
       ),
     ));

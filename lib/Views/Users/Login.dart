@@ -155,7 +155,61 @@ class _LoginState extends State<Login> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 40),
+
+                  const SizedBox(height: 8),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          showModalBottomSheet(
+                            backgroundColor: MyColors.backgroundColor,
+                            context: context,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(20),
+                              ),
+                            ),
+                            builder: (_) {
+                              return Container(
+                                padding: const EdgeInsets.all(16),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    buildListTile(
+                                      context,
+                                      "ar",
+                                      "AE",
+                                      selectedLanguage,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    buildListTile(
+                                      context,
+                                      "en",
+                                      "US",
+                                      selectedLanguage,
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(0.0),
+                          child: CircleAvatar(
+                            radius: 20,
+                            backgroundImage: AssetImage(
+                              'assets/flags/${selectedLanguage.value}.png',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
 
                   // Header with Logo and Title
                   _buildHeader(),
@@ -187,6 +241,39 @@ class _LoginState extends State<Login> {
       ),
     );
   }
+
+  RxString selectedLanguage = Selected_Language.getLanguage()!.obs;
+
+  Widget buildListTile(
+      BuildContext context,
+      String languageCode,
+      String countryCode,
+      RxString selectedLanguage,
+      ) {
+    return ListTile(
+      leading: ClipOval(
+        child: Image.asset(
+          'assets/flags/$languageCode.png',
+          width: 32,
+          height: 32,
+          fit: BoxFit.cover,
+        ),
+      ),
+      title: Text(languageCode == "ar" ? "عربي" : "English"),
+      trailing: selectedLanguage.value == languageCode
+          ? const Icon(Icons.check, color: Colors.green)
+          : null,
+      onTap: () {
+        selectedLanguage.value = languageCode;
+        String subValue = languageCode == "ar" ? "AE" : "US";
+        Get.updateLocale(Locale(languageCode, subValue));
+        Selected_Language.setLanguage(languageCode);
+        // iniService.getData();
+        Navigator.pop(context);
+      },
+    );
+  }
+
 
   Widget _buildHeader() {
     return Column(

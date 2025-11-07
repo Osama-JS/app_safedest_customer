@@ -768,7 +768,7 @@ class Messages extends Translations {
       "task_statistics": "إحصائيات المهام",
       "running": "جارية",
       "in_progress": "قيد التنفيذ",
-      "app_name": "وجهات امنة - العملاء",
+      "app_name": "وجهات آمنة - العملاء",
       "app_slogan": "شريكك الموثوق في التوصيل",
       "version": "الإصدار",
       "retry": "إعادة المحاولة",

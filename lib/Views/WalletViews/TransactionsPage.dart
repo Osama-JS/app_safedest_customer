@@ -118,7 +118,7 @@ class _TransactionsPageState extends State<TransactionsPage>
                   Tab(text: 'all'.tr),
                   Tab(text: 'credit'.tr),
                   Tab(text: 'debit'.tr),
-                  Tab(text: 'withImage'.tr),
+                  Tab(text: 'with_image'.tr),
                 ],
                 onTap: (index) {
                   selectedFilter.value = index;

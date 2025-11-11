@@ -441,27 +441,27 @@ class _SimpleRegisterState extends State<SimpleRegister>
               : Column(
                   children: [
                     // Progress indicator
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          for (int i = 0; i < 3; i++) ...[
-                            Expanded(
-                              child: Container(
-                                height: 4,
-                                decoration: BoxDecoration(
-                                  color: i <= _currentStep
-                                      ? MyColors.primaryColor
-                                      : Colors.grey[300],
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
-                              ),
-                            ),
-                            if (i < 2) const SizedBox(width: 8),
-                          ],
-                        ],
-                      ),
-                    ),
+                    // Container(
+                    //   padding: const EdgeInsets.all(16),
+                    //   child: Row(
+                    //     children: [
+                    //       for (int i = 0; i < 3; i++) ...[
+                    //         Expanded(
+                    //           child: Container(
+                    //             height: 4,
+                    //             decoration: BoxDecoration(
+                    //               color: i <= _currentStep
+                    //                   ? MyColors.primaryColor
+                    //                   : Colors.grey[300],
+                    //               borderRadius: BorderRadius.circular(2),
+                    //             ),
+                    //           ),
+                    //         ),
+                    //         if (i < 2) const SizedBox(width: 8),
+                    //       ],
+                    //     ],
+                    //   ),
+                    // ),
 
                     // TabBarView content
                     Expanded(
@@ -671,7 +671,7 @@ class _SimpleRegisterState extends State<SimpleRegister>
         Obx(
           () => PhoneInputField2(
             controller: phoneController,
-            label: "phone".tr,
+            label: "phone_number".tr,
             selectedCountryCode: selectedPhoneCode.value,
             countryCodes: phoneCodes,
             onCountryCodeChanged: (value) {
@@ -716,7 +716,7 @@ class _SimpleRegisterState extends State<SimpleRegister>
                 ),
             validator: (text) {
               if (text!.trim().isEmpty) {
-                return "${'password'.tr} ${'isRequired'.tr}";
+                return "${'password'.tr} ${'is_required'.tr}";
               }
               return null;
             },
@@ -733,7 +733,7 @@ class _SimpleRegisterState extends State<SimpleRegister>
             keyboardType: TextInputType.text,
             obscureText: secureText2.value,
             decoration: gm
-                .customInputDecoration('confirmPassword'.tr, Icons.lock)
+                .customInputDecoration('confirm_password'.tr, Icons.lock)
                 .copyWith(
                   suffixIcon: IconButton(
                     icon: Icon(
@@ -749,7 +749,7 @@ class _SimpleRegisterState extends State<SimpleRegister>
                 ),
             validator: (text) {
               if (text!.trim().isEmpty) {
-                return "${'confirmPassword'.tr} ${'isRequired'.tr}";
+                return "${'confirm_password'.tr} ${'is_required'.tr}";
               }
               return null;
             },
@@ -893,7 +893,7 @@ class _SimpleRegisterState extends State<SimpleRegister>
               onChanged: (val) => field.textValue.value = val,
               validator: (val) =>
                   (field.required && (val == null || val.isEmpty))
-                  ? "field_required".trParams({'field': field.label})
+                  ? "${field.label} ${"is_required".tr}"
                   : null,
             ),
           ),
@@ -913,7 +913,7 @@ class _SimpleRegisterState extends State<SimpleRegister>
               onChanged: (val) => field.textValue.value = val,
               validator: (val) =>
                   (field.required && (val == null || val.isEmpty))
-                  ? "field_required".trParams({'field': field.label})
+                  ? "${field.label} ${"is_required".tr}"
                   : null,
             ),
           ),
@@ -932,10 +932,12 @@ class _SimpleRegisterState extends State<SimpleRegister>
               ),
               onChanged: (val) => field.textValue.value = val,
               validator: (val) {
-                if (field.required && (val == null || val.isEmpty))
-                  return "field_required".trParams({'field': field.label});
-                if (val != null && val.isNotEmpty && !val.startsWith('http'))
+                if (field.required && (val == null || val.isEmpty)) {
+                  return "${field.label} ${"is_required".tr}";
+                }
+                if (val != null && val.isNotEmpty && !val.startsWith('http')) {
                   return "invalid_url_format".tr;
+                }
                 return null;
               },
             ),

@@ -309,7 +309,7 @@ class _LoginState extends State<Login> {
 
         // App Name
         Text(
-          'SafeDest Customer',
+          'app_name'.tr,
           style: AppTheme.headlineLarge.copyWith(
             fontWeight: AppTheme.bold,
             color: MyColors.primaryColor,
@@ -485,7 +485,7 @@ class _LoginState extends State<Login> {
                 // TODO: Show privacy policy
               },
               child: Text(
-                'privacyPolicyText'.tr,
+                'privacy_policy'.tr,
                 style: AppTheme.bodySmall.copyWith(
                   color: MyColors.primaryColor,
                 ),

@@ -465,6 +465,13 @@ class Messages extends Translations {
       "loginErrorTitle": "Login Error",
       "ok": "OK",
       "code_resent": "Code resent successfully",
+
+      "all_transactions": "All Transactions",
+      "credit": "Credit",
+      "with_image": "With Image",
+      "no_transactions": "No Transactions",
+      "create_account": "Create account"
+
     },
     'ar': {
       "rs": "\u{e900}",
@@ -895,7 +902,7 @@ class Messages extends Translations {
       "enter_email_to_recover_password":
           "أدخل بريدك الإلكتروني لاستعادة كلمة المرور",
       "invalid_email": "بريد إلكتروني غير صالح",
-      "welcomeToCustomerApp": "مرحباً بك في تطبيق SafeDest للعملاء",
+      "welcomeToCustomerApp": "مرحباً بك في تطبيق وجهات آمنة للعملاء",
       "emailOrUsernameLabel": "البريد الإلكتروني أو اسم المستخدم",
       "enterEmailOrUsernameHint": "أدخل بريدك الإلكتروني أو اسم المستخدم",
       "pleaseEnterEmailError": "يرجى إدخال البريد الإلكتروني أو اسم المستخدم",
@@ -918,6 +925,12 @@ class Messages extends Translations {
       "loginErrorTitle": "خطأ في تسجيل الدخول",
       "ok": "موافق",
       "code_resent": "تم إعادة إرسال الرمز بنجاح",
+
+      "all_transactions": "جميع المعاملات",
+      "credit": "رصيد",
+      "with_image": "بصورة",
+      "no_transactions": "لا توجد معاملات",
+      "create_account": "انشاء حساب",
     },
   };
 }
